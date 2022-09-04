@@ -42,6 +42,15 @@ public class DemoPlayer : MonoBehaviour
     [SerializeField] private GameObject AirNoteObject;
     [SerializeField] private GameObject measureLineObject;
     [SerializeField] private Transform NotesParent;
+
+    [SerializeField] private int tapNoteSortingOrder;
+    [SerializeField] private int exTapNoteSortingOrder;
+    [SerializeField] private int flickNoteSortingOrder;
+    [SerializeField] private int holdNoteSortingOrder;
+    [SerializeField] private int slideNoteSortingOrder;
+    [SerializeField] private int AirNoteSortingOrder;
+    [SerializeField] private int measureLineSortingOrder;
+
     private long timing;
     private float time;
     private bool playedGuideSe = false;
@@ -139,9 +148,12 @@ public class DemoPlayer : MonoBehaviour
                                 {
                                     GameObject instantiatedNote = Instantiate(tapNoteObject, NotesParent, true);
                                     instantiatedNote.transform.localPosition = new Vector3(mmm1x.X, 0, analyzeSetting.InstantiatePosition);
-                                    instantiatedNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm1x.Size, noteHeight);
+                                    SpriteRenderer spriteRenderer = instantiatedNote.GetComponent<SpriteRenderer>();
+                                    spriteRenderer.size = new Vector2(mmm1x.Size, noteHeight);
                                     TapNoteController controller = instantiatedNote.GetComponent<TapNoteController>();
                                     mover = controller;
+
+                                    spriteRenderer.sortingOrder = tapNoteSortingOrder;
                                 }
                                 break;
 
@@ -150,9 +162,12 @@ public class DemoPlayer : MonoBehaviour
                                 {
                                     GameObject instantiatedNote = Instantiate(exTapNoteObject, NotesParent, true);
                                     instantiatedNote.transform.localPosition = new Vector3(mmm1x.X, 0, analyzeSetting.InstantiatePosition);
-                                    instantiatedNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm1x.Size, noteHeight);
+                                    SpriteRenderer spriteRenderer = instantiatedNote.GetComponent<SpriteRenderer>();
+                                    spriteRenderer.size = new Vector2(mmm1x.Size, noteHeight);
                                     ExTapNoteController controller = instantiatedNote.GetComponent<ExTapNoteController>();
                                     mover = controller;
+
+                                    spriteRenderer.sortingOrder = exTapNoteSortingOrder;
                                 }
                                 break;
 
@@ -161,10 +176,13 @@ public class DemoPlayer : MonoBehaviour
                                 {
                                     GameObject instantiatedNote = Instantiate(flickNoteObject, NotesParent, true);
                                     instantiatedNote.transform.localPosition = new Vector3(mmm1x.X, 0, analyzeSetting.InstantiatePosition);
-                                    instantiatedNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm1x.Size, noteHeight);
+                                    SpriteRenderer spriteRenderer = instantiatedNote.GetComponent<SpriteRenderer>();
+                                    spriteRenderer.size = new Vector2(mmm1x.Size, noteHeight);
                                     FlickNoteController controller = instantiatedNote.GetComponent<FlickNoteController>();
-                                    controller.SetFlickNote(mmm1x.Size, noteHeight);
+                                    controller.SetFlickNote(mmm1x.Size, noteHeight, flickNoteSortingOrder);
                                     mover = controller;
+
+                                    spriteRenderer.sortingOrder = flickNoteSortingOrder;
                                 }
                                 break;
                         }
@@ -177,14 +195,20 @@ public class DemoPlayer : MonoBehaviour
 
                         GameObject instantiatedHoldNote = Instantiate(holdNoteObject, NotesParent, true);
                         instantiatedHoldNote.transform.localPosition = new Vector3(mmm2xy.X, 0, analyzeSetting.InstantiatePosition);
-                        instantiatedHoldNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm2xy.Size, noteHeight);
+                        SpriteRenderer startSpriteRenderer = instantiatedHoldNote.GetComponent<SpriteRenderer>();
+                        startSpriteRenderer.size = new Vector2(mmm2xy.Size, noteHeight);
                         HoldNoteController controller = instantiatedHoldNote.GetComponent<HoldNoteController>();
+
+                        startSpriteRenderer.sortingOrder = holdNoteSortingOrder;
 
                         // 終了点をインスタンス化
                         GameObject instantiatedHoldEndNote = Instantiate(holdStepNoteObject, NotesParent, true);
                         instantiatedHoldEndNote.transform.localPosition = new Vector3(mmm2xy.X, 0, analyzeSetting.InstantiatePosition);
-                        instantiatedHoldEndNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm2xy.Size, noteHeight);
+                        SpriteRenderer endSpriteRenderer = instantiatedHoldEndNote.GetComponent<SpriteRenderer>();
+                        endSpriteRenderer.size = new Vector2(mmm2xy.Size, noteHeight);
                         instantiatedHoldEndNote.transform.SetParent(instantiatedHoldNote.transform);
+
+                        endSpriteRenderer.sortingOrder = holdNoteSortingOrder;
 
                         controller.EndNoteMover = settingMover(instantiatedHoldEndNote.GetComponent<HoldEndNoteController>(), true, mmm2xy.EndNote.NoteData as SusNotePlaybackDataBase);
                         mover = controller;
@@ -197,8 +221,12 @@ public class DemoPlayer : MonoBehaviour
 
                         GameObject instantiatedNote = Instantiate(slideNoteObject, NotesParent, true);
                         instantiatedNote.transform.localPosition = new Vector3(mmm3xy.X, 0, analyzeSetting.InstantiatePosition);
-                        instantiatedNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm3xy.Size, noteHeight);
+                        SpriteRenderer startSpriteRenderer = instantiatedNote.GetComponent<SpriteRenderer>();
+                        startSpriteRenderer.size = new Vector2(mmm3xy.Size, noteHeight);
                         SlideNoteController controller = instantiatedNote.GetComponent<SlideNoteController>();
+
+                        startSpriteRenderer.sortingOrder = slideNoteSortingOrder;
+
                         controller.StepNoteMovers = new List<INoteMover>();
                         controller.CurveControlMovers = new List<SusNotePlaybackDataMMM3XYCurveControl>();
 
@@ -209,15 +237,17 @@ public class DemoPlayer : MonoBehaviour
                             if (!step.Invisible)
                             {
                                 instantiatedStepNote = Instantiate(slideStepNoteObject, NotesParent, true);
-                                instantiatedStepNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(step.Size, noteHeight);
+                                SpriteRenderer stepSpriteRenderer = instantiatedStepNote.GetComponent<SpriteRenderer>();
+                                stepSpriteRenderer.size = new Vector2(step.Size, noteHeight);
                                 instantiatedStepNote.transform.localPosition = new Vector3(step.X, 0, analyzeSetting.InstantiatePosition);
                                 instantiatedStepNote.transform.SetParent(instantiatedNote.transform);
                                 controller.StepNoteMovers.Add(settingMover(instantiatedStepNote.GetComponent<SlideStepNoteController>(), true, step.NoteData as SusNotePlaybackDataBase));
+
+                                stepSpriteRenderer.sortingOrder = slideNoteSortingOrder;
                             }
                             else
                             {
                                 instantiatedStepNote = Instantiate(slideInvisibleStepNoteObject, NotesParent, true);
-                                instantiatedStepNote.transform.localPosition = new Vector3(step.X, 0, analyzeSetting.InstantiatePosition);
                                 instantiatedStepNote.transform.SetParent(instantiatedNote.transform);
                                 controller.StepNoteMovers.Add(settingMover(instantiatedStepNote.GetComponent<SlideInvisibleStepNoteController>(), false, step.NoteData as SusNotePlaybackDataBase));
                             }
@@ -238,6 +268,8 @@ public class DemoPlayer : MonoBehaviour
                         AirNoteController controller = instantiatedNote.GetComponent<AirNoteController>();
                         controller.AirType = mmm5x.Type;
                         mover = controller;
+
+                        instantiatedNote.GetComponent<MeshRenderer>().sortingOrder = AirNoteSortingOrder;
                     }
 
                     // MeasureLine
@@ -248,6 +280,8 @@ public class DemoPlayer : MonoBehaviour
                         MeasureLineController controller = measureLine.GetComponent<MeasureLineController>();
                         mover = controller;
                         playGuideSe = false;
+
+                        measureLine.GetComponent<SpriteRenderer>().sortingOrder = measureLineSortingOrder;
                     }
 
                     if(mover != null)
