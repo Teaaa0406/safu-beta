@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4510527807884459407}
   - component: {fileID: 2018162093727437270}
   - component: {fileID: 5578777732275537407}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: TapNote
   m_TagString: Untagged
   m_Icon: {fileID: 0}

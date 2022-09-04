@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1713405294926635385}
   - component: {fileID: 2293842505959502588}
   - component: {fileID: 3812626719503531968}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: HoldMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}

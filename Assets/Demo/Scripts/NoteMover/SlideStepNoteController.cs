@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlideStepNoteController : NoteMoverBase
+public class SlideStepNoteController : NoteMoverBase, INoteMover
 {
 
 }

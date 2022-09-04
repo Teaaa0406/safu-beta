@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7816691276492476963}
   - component: {fileID: 8623056719709271365}
   - component: {fileID: 9069697745582742583}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ExTapNote
   m_TagString: Untagged
   m_Icon: {fileID: 0}

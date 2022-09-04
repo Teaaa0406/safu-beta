@@ -38,6 +38,7 @@ public class DemoPlayer : MonoBehaviour
     [SerializeField] private GameObject holdStepNoteObject;
     [SerializeField] private GameObject slideNoteObject;
     [SerializeField] private GameObject slideStepNoteObject;
+    [SerializeField] private GameObject slideInvisibleStepNoteObject;
     [SerializeField] private GameObject AirNoteObject;
     [SerializeField] private GameObject measureLineObject;
     [SerializeField] private Transform NotesParent;
@@ -181,11 +182,11 @@ public class DemoPlayer : MonoBehaviour
 
                         // 終了点をインスタンス化
                         GameObject instantiatedHoldEndNote = Instantiate(holdStepNoteObject, NotesParent, true);
-                        instantiatedHoldEndNote.transform.localPosition = new Vector3(mmm2xy.X, 0, analyzeSetting.InstantiatePosition + mmm2xy.CalHoldNoteLength(timing));
+                        instantiatedHoldEndNote.transform.localPosition = new Vector3(mmm2xy.X, 0, analyzeSetting.InstantiatePosition);
                         instantiatedHoldEndNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm2xy.Size, noteHeight);
                         instantiatedHoldEndNote.transform.SetParent(instantiatedHoldNote.transform);
 
-                        controller.EndNoteMover = settingMover(instantiatedHoldEndNote.GetComponent<HoldEndNoteController>(), playGuideSe, mmm2xy.EndNote.NoteData as SusNotePlaybackDataBase);
+                        controller.EndNoteMover = settingMover(instantiatedHoldEndNote.GetComponent<HoldEndNoteController>(), true, mmm2xy.EndNote.NoteData as SusNotePlaybackDataBase);
                         mover = controller;
                     }
 
@@ -198,6 +199,32 @@ public class DemoPlayer : MonoBehaviour
                         instantiatedNote.transform.localPosition = new Vector3(mmm3xy.X, 0, analyzeSetting.InstantiatePosition);
                         instantiatedNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(mmm3xy.Size, noteHeight);
                         SlideNoteController controller = instantiatedNote.GetComponent<SlideNoteController>();
+                        controller.StepNoteMovers = new List<INoteMover>();
+                        controller.CurveControlMovers = new List<SusNotePlaybackDataMMM3XYCurveControl>();
+
+                        // すべての中継点をインスタンス化
+                        foreach (SusNotePlaybackDataMMM3XYStep step in mmm3xy.Steps)
+                        {
+                            GameObject instantiatedStepNote;
+                            if (!step.Invisible)
+                            {
+                                instantiatedStepNote = Instantiate(slideStepNoteObject, NotesParent, true);
+                                instantiatedStepNote.gameObject.GetComponent<SpriteRenderer>().size = new Vector2(step.Size, noteHeight);
+                                instantiatedStepNote.transform.localPosition = new Vector3(step.X, 0, analyzeSetting.InstantiatePosition);
+                                instantiatedStepNote.transform.SetParent(instantiatedNote.transform);
+                                controller.StepNoteMovers.Add(settingMover(instantiatedStepNote.GetComponent<SlideStepNoteController>(), true, step.NoteData as SusNotePlaybackDataBase));
+                            }
+                            else
+                            {
+                                instantiatedStepNote = Instantiate(slideInvisibleStepNoteObject, NotesParent, true);
+                                instantiatedStepNote.transform.localPosition = new Vector3(step.X, 0, analyzeSetting.InstantiatePosition);
+                                instantiatedStepNote.transform.SetParent(instantiatedNote.transform);
+                                controller.StepNoteMovers.Add(settingMover(instantiatedStepNote.GetComponent<SlideInvisibleStepNoteController>(), false, step.NoteData as SusNotePlaybackDataBase));
+                            }
+                            mover = controller;
+                        }
+
+                        controller.CurveControlMovers = mmm3xy.CurveControls;
                         mover = controller;
                     }
 

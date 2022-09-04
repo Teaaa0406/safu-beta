@@ -26,7 +26,7 @@ public class HoldNoteController : NoteMoverBase, INoteMover
             EndNoteMover.MoveClock(timing);
 
             // ホールドの生成
-            GenerateHold(startNotePosition, timing);
+            GenerateHold(timing);
 
         }
 
@@ -39,7 +39,7 @@ public class HoldNoteController : NoteMoverBase, INoteMover
     }
 
     // ホールドメッシュの生成
-    private void GenerateHold(float startPos, long timing)
+    private void GenerateHold(long timing)
     {
         if (mmm2xyPlaybackData == null) mmm2xyPlaybackData = NotePlaybackData.NoteData as SusNotePlaybackDataMMM2XY;
         if(meshFilter == null) meshFilter = Instantiate(holdMeshObject, transform, false).GetComponent<MeshFilter>();

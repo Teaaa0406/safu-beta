@@ -105,7 +105,8 @@ namespace Tea.Safu.Models
     {
         public float X { get; set; }
         public float Size { get; set; }
-        public SusNotePlaybackDataMMM3XYEnd EndNote { get; set; }
+        public List<SusNotePlaybackDataMMM3XYStep> Steps { get; set; }
+        public List<SusNotePlaybackDataMMM3XYCurveControl> CurveControls { get; set; }
 
         public SusNotePlaybackDataMMM3XY()
         {
@@ -114,18 +115,24 @@ namespace Tea.Safu.Models
         }
     }
 
-    public class SusNotePlaybackDataMMM3XYEnd : SusNotePlaybackDataBase
+    public class SusNotePlaybackDataMMM3XYStep : SusNotePlaybackDataBase
     {
-        public SusNotePlaybackDataMMM3XYEnd()
+        public float X { get; set; }
+        public float Size { get; set; }
+        public bool Invisible { get; set; }
+        public bool End { get; set; }
+        public SusNotePlaybackDataMMM3XYStep()
         {
-            NoteDataType = NoteDataType.mmm3xyEnd;
+            NoteDataType = NoteDataType.mmm3xyStep;
             NoteData = this;
         }
     }
 
-    public class SusNotePlaybackDataMMM3XYStep : SusNotePlaybackDataBase
+    public class SusNotePlaybackDataMMM3XYCurveControl : SusNotePlaybackDataBase
     {
-        public SusNotePlaybackDataMMM3XYStep()
+        public float X { get; set; }
+        public float Size { get; set; }
+        public SusNotePlaybackDataMMM3XYCurveControl()
         {
             NoteDataType = NoteDataType.mmm3xyStep;
             NoteData = this;

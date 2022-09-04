@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7437897320708930296}
   - component: {fileID: 7437897320708930299}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Flick
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 1158282152487072508}
   - component: {fileID: 4472136823684269312}
   - component: {fileID: 8499389307045503934}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: FlickNote
   m_TagString: Untagged
   m_Icon: {fileID: 0}

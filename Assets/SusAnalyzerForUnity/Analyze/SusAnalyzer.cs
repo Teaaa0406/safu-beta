@@ -171,6 +171,9 @@ namespace Tea.Safu.Analyze
                         mmm3xy.Size = mmm3xyData.Size;
                         mmm3xy.InstantiateTiming = mmm3xy.CalInstantiateTiming(setting.StartTiming);
 
+                        mmm3xy.Steps = new List<SusNotePlaybackDataMMM3XYStep>();
+                        mmm3xy.CurveControls = new List<SusNotePlaybackDataMMM3XYCurveControl>();
+
                         string y = mmm3xyData.Y;
                         for (int i = readIndex + 1; i < chartDatas.NoteDatas.Count; i++)
                         {
@@ -180,15 +183,54 @@ namespace Tea.Safu.Analyze
                             NoteDataMMM3XY nextMmm3xy = nextNoteData.NoteData as NoteDataMMM3XY;
                             if (nextMmm3xy.Y != y) continue;
 
-                            if (nextMmm3xy.Type == 2)
+                            bool end = false;
+                            switch (nextMmm3xy.Type)
                             {
-                                SusNotePlaybackDataMMM3XYEnd mmm3xyEnd = new SusNotePlaybackDataMMM3XYEnd();
-                                mmm3xyEnd.Setting = setting;
-                                mmm3xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
-                                mmm3xyEnd.InstantiateTiming = mmm3xy.CalInstantiateTiming(setting.StartTiming);
-                                mmm3xy.EndNote = mmm3xyEnd;
-                                break;
+                                case 2:
+                                    SusNotePlaybackDataMMM3XYStep mmm3xyEnd = new SusNotePlaybackDataMMM3XYStep();
+                                    mmm3xyEnd.Setting = setting;
+                                    mmm3xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm3xyEnd.X = nextMmm3xy.X;
+                                    mmm3xyEnd.Size = nextMmm3xy.Size;
+                                    mmm3xyEnd.End = true;
+                                    mmm3xyEnd.Invisible = false;
+                                    mmm3xyEnd.InstantiateTiming = mmm3xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm3xy.Steps.Add(mmm3xyEnd);
+                                    end = true;
+                                    break;
+                                case 3:
+                                    SusNotePlaybackDataMMM3XYStep mmm3xyStep = new SusNotePlaybackDataMMM3XYStep();
+                                    mmm3xyStep.Setting = setting;
+                                    mmm3xyStep.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm3xyStep.X = nextMmm3xy.X;
+                                    mmm3xyStep.Size = nextMmm3xy.Size;
+                                    mmm3xyStep.End = false;
+                                    mmm3xyStep.Invisible = false;
+                                    mmm3xyStep.InstantiateTiming = mmm3xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm3xy.Steps.Add(mmm3xyStep);
+                                    break;
+                                case 4:
+                                    SusNotePlaybackDataMMM3XYCurveControl mmm3xyCurveControl = new SusNotePlaybackDataMMM3XYCurveControl();
+                                    mmm3xyCurveControl.Setting = setting;
+                                    mmm3xyCurveControl.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm3xyCurveControl.X = nextMmm3xy.X;
+                                    mmm3xyCurveControl.Size = nextMmm3xy.Size;
+                                    mmm3xyCurveControl.InstantiateTiming = mmm3xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm3xy.CurveControls.Add(mmm3xyCurveControl);
+                                    break;
+                                case 5:
+                                    SusNotePlaybackDataMMM3XYStep mmm3xyInvisibleStep = new SusNotePlaybackDataMMM3XYStep();
+                                    mmm3xyInvisibleStep.Setting = setting;
+                                    mmm3xyInvisibleStep.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm3xyInvisibleStep.X = nextMmm3xy.X;
+                                    mmm3xyInvisibleStep.Size = nextMmm3xy.Size;
+                                    mmm3xyInvisibleStep.End = false;
+                                    mmm3xyInvisibleStep.Invisible = true;
+                                    mmm3xyInvisibleStep.InstantiateTiming = mmm3xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm3xy.Steps.Add(mmm3xyInvisibleStep);
+                                    break;
                             }
+                            if (end) break;
                         }
                         notePlaybackDatas.Notes.Add(mmm3xy);
                     }

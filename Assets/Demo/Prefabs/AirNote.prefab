@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2947074838993206828}
   - component: {fileID: 2947074838993206829}
   - component: {fileID: 2947074838993206830}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: AirNote
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,6 +99,6 @@ MonoBehaviour:
   airUpMaterial: {fileID: 2100000, guid: 3a6d7911b039b6d48818d5faa723970a, type: 2}
   airDownMaterial: {fileID: 2100000, guid: 34582742da3fb65448feea4353c3dd8e, type: 2}
   ariHeight: 4
-  inclinationOffset: 3
+  inclinationOffset: 2
   startTextureOffset: 1
   endTextureOffset: 2.5
