@@ -1316,7 +1316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   analyzeSetting:
-    speed: 0.825
+    speed: 0.8
     instantiatePosition: 70
     judgmentPosition: 0
     startTiming: -1000
@@ -1340,6 +1340,9 @@ MonoBehaviour:
   slideStepNoteObject: {fileID: 132849034931698160, guid: 2e407565d44b69d42be25210b427e44a, type: 3}
   slideInvisibleStepNoteObject: {fileID: 132849034931698160, guid: f2208448203872e43b47bb5e749c89cb, type: 3}
   AirNoteObject: {fileID: 2947074838993206831, guid: ebe6c847aa3994d4188fc72b9dba2f76, type: 3}
+  AirHoldNoteObject: {fileID: 4199164642263750239, guid: ecf57d62d73bdad4a8e015db9048f001, type: 3}
+  AirActionNoteObject: {fileID: 5011013861387411257, guid: 821d485a0ec910c45840a7b2ecbfb9c9, type: 3}
+  AirActionShadowObject: {fileID: 2544474237598594994, guid: 02744cb117c055d419399fa6226082e4, type: 3}
   measureLineObject: {fileID: 8161567957107217547, guid: 51f8b773f8f66dc489bb54508c03841a, type: 3}
   NotesParent: {fileID: 613222229}
   tapNoteSortingOrder: 3
@@ -1347,7 +1350,9 @@ MonoBehaviour:
   flickNoteSortingOrder: 5
   holdNoteSortingOrder: 1
   slideNoteSortingOrder: 2
-  AirNoteSortingOrder: 6
+  airNoteSortingOrder: 7
+  airHoldNoteSortingOrder: 8
+  airActionShadowSortingOrder: 6
   measureLineSortingOrder: 0
 --- !u!82 &1133641092
 AudioSource:

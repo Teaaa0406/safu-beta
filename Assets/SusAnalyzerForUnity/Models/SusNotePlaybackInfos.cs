@@ -134,7 +134,45 @@ namespace Tea.Safu.Models
         public float Size { get; set; }
         public SusNotePlaybackDataMMM3XYCurveControl()
         {
-            NoteDataType = NoteDataType.mmm3xyStep;
+            NoteDataType = NoteDataType.mmm3xyCurveControl;
+            NoteData = this;
+        }
+    }
+
+    public class SusNotePlaybackDataMMM4XY : SusNotePlaybackDataBase
+    {
+        public float X { get; set; }
+        public float Size { get; set; }
+        public List<SusNotePlaybackDataMMM4XYStep> Steps { get; set; }
+        public List<SusNotePlaybackDataMMM4XYCurveControl> CurveControls { get; set; }
+
+        public SusNotePlaybackDataMMM4XY()
+        {
+            NoteDataType = NoteDataType.mmm4xy;
+            NoteData = this;
+        }
+    }
+
+    public class SusNotePlaybackDataMMM4XYStep : SusNotePlaybackDataBase
+    {
+        public float X { get; set; }
+        public float Size { get; set; }
+        public bool Invisible { get; set; }
+        public bool End { get; set; }
+        public SusNotePlaybackDataMMM4XYStep()
+        {
+            NoteDataType = NoteDataType.mmm4xyStep;
+            NoteData = this;
+        }
+    }
+
+    public class SusNotePlaybackDataMMM4XYCurveControl : SusNotePlaybackDataBase
+    {
+        public float X { get; set; }
+        public float Size { get; set; }
+        public SusNotePlaybackDataMMM4XYCurveControl()
+        {
+            NoteDataType = NoteDataType.mmm4xyCurveControl;
             NoteData = this;
         }
     }

@@ -35,9 +35,25 @@ namespace Tea.Safu.Models
         /// </summary>
         mmm3xyStep,
         /// <summary>
+        /// スライド1曲線制御点
+        /// </summary>
+        mmm3xyCurveControl,
+        /// <summary>
         /// スライド2
         /// </summary>
         mmm4xy,
+        /// <summary>
+        /// スライド2終了点
+        /// </summary>
+        mmm4xyEnd,
+        /// <summary>
+        /// スライド2中継点
+        /// </summary>
+        mmm4xyStep,
+        /// <summary>
+        /// スライド2曲線制御点
+        /// </summary>
+        mmm4xyCurveControl,
         /// <summary>
         /// ディレクショナル
         /// </summary>

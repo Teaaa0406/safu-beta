@@ -105,11 +105,6 @@ namespace Tea.Safu.Analyze
                     readIndex += 1;
                     continue;
                 }
-                if (noteData.DataType == NoteDataType.mmm4xy)
-                {
-                    readIndex += 1;
-                    continue;
-                }
 
                 if (noteData.DataType == NoteDataType.mmm1x)
                 {
@@ -233,6 +228,83 @@ namespace Tea.Safu.Analyze
                             if (end) break;
                         }
                         notePlaybackDatas.Notes.Add(mmm3xy);
+                    }
+                }
+
+                else if (noteData.DataType == NoteDataType.mmm4xy)
+                {
+                    NoteDataMMM4XY mmm4xyData = noteData.NoteData as NoteDataMMM4XY;
+                    if (mmm4xyData.Type == 1)
+                    {
+                        SusNotePlaybackDataMMM4XY mmm4xy = new SusNotePlaybackDataMMM4XY();
+                        mmm4xy.Setting = setting;
+                        mmm4xy.EnabledTiming = noteData.EnabledTiming;
+                        mmm4xy.X = mmm4xyData.X;
+                        mmm4xy.Size = mmm4xyData.Size;
+                        mmm4xy.InstantiateTiming = mmm4xy.CalInstantiateTiming(setting.StartTiming);
+
+                        mmm4xy.Steps = new List<SusNotePlaybackDataMMM4XYStep>();
+                        mmm4xy.CurveControls = new List<SusNotePlaybackDataMMM4XYCurveControl>();
+
+                        string y = mmm4xyData.Y;
+                        for (int i = readIndex + 1; i < chartDatas.NoteDatas.Count; i++)
+                        {
+                            SusNoteDataBase nextNoteData = chartDatas.NoteDatas[i];
+                            if (nextNoteData.DataType != NoteDataType.mmm4xy) continue;
+
+                            NoteDataMMM4XY nextMmm4xy = nextNoteData.NoteData as NoteDataMMM4XY;
+                            if (nextMmm4xy.Y != y) continue;
+
+                            bool end = false;
+                            switch (nextMmm4xy.Type)
+                            {
+                                case 2:
+                                    SusNotePlaybackDataMMM4XYStep mmm4xyEnd = new SusNotePlaybackDataMMM4XYStep();
+                                    mmm4xyEnd.Setting = setting;
+                                    mmm4xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm4xyEnd.X = nextMmm4xy.X;
+                                    mmm4xyEnd.Size = nextMmm4xy.Size;
+                                    mmm4xyEnd.End = true;
+                                    mmm4xyEnd.Invisible = false;
+                                    mmm4xyEnd.InstantiateTiming = mmm4xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm4xy.Steps.Add(mmm4xyEnd);
+                                    end = true;
+                                    break;
+                                case 3:
+                                    SusNotePlaybackDataMMM4XYStep mmm4xyStep = new SusNotePlaybackDataMMM4XYStep();
+                                    mmm4xyStep.Setting = setting;
+                                    mmm4xyStep.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm4xyStep.X = nextMmm4xy.X;
+                                    mmm4xyStep.Size = nextMmm4xy.Size;
+                                    mmm4xyStep.End = false;
+                                    mmm4xyStep.Invisible = false;
+                                    mmm4xyStep.InstantiateTiming = mmm4xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm4xy.Steps.Add(mmm4xyStep);
+                                    break;
+                                case 4:
+                                    SusNotePlaybackDataMMM4XYCurveControl mmm4xyCurveControl = new SusNotePlaybackDataMMM4XYCurveControl();
+                                    mmm4xyCurveControl.Setting = setting;
+                                    mmm4xyCurveControl.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm4xyCurveControl.X = nextMmm4xy.X;
+                                    mmm4xyCurveControl.Size = nextMmm4xy.Size;
+                                    mmm4xyCurveControl.InstantiateTiming = mmm4xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm4xy.CurveControls.Add(mmm4xyCurveControl);
+                                    break;
+                                case 5:
+                                    SusNotePlaybackDataMMM4XYStep mmm4xyInvisibleStep = new SusNotePlaybackDataMMM4XYStep();
+                                    mmm4xyInvisibleStep.Setting = setting;
+                                    mmm4xyInvisibleStep.EnabledTiming = nextNoteData.EnabledTiming;
+                                    mmm4xyInvisibleStep.X = nextMmm4xy.X;
+                                    mmm4xyInvisibleStep.Size = nextMmm4xy.Size;
+                                    mmm4xyInvisibleStep.End = false;
+                                    mmm4xyInvisibleStep.Invisible = true;
+                                    mmm4xyInvisibleStep.InstantiateTiming = mmm4xy.CalInstantiateTiming(setting.StartTiming);
+                                    mmm4xy.Steps.Add(mmm4xyInvisibleStep);
+                                    break;
+                            }
+                            if (end) break;
+                        }
+                        notePlaybackDatas.Notes.Add(mmm4xy);
                     }
                 }
 

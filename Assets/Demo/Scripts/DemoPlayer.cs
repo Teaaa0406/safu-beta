@@ -40,6 +40,9 @@ public class DemoPlayer : MonoBehaviour
     [SerializeField] private GameObject slideStepNoteObject;
     [SerializeField] private GameObject slideInvisibleStepNoteObject;
     [SerializeField] private GameObject AirNoteObject;
+    [SerializeField] private GameObject AirHoldNoteObject;
+    [SerializeField] private GameObject AirActionNoteObject;
+    [SerializeField] private GameObject AirActionShadowObject;
     [SerializeField] private GameObject measureLineObject;
     [SerializeField] private Transform NotesParent;
 
@@ -48,7 +51,9 @@ public class DemoPlayer : MonoBehaviour
     [SerializeField] private int flickNoteSortingOrder;
     [SerializeField] private int holdNoteSortingOrder;
     [SerializeField] private int slideNoteSortingOrder;
-    [SerializeField] private int AirNoteSortingOrder;
+    [SerializeField] private int airNoteSortingOrder;
+    [SerializeField] private int airHoldNoteSortingOrder;
+    [SerializeField] private int airActionShadowSortingOrder;
     [SerializeField] private int measureLineSortingOrder;
 
     private long timing;
@@ -258,6 +263,46 @@ public class DemoPlayer : MonoBehaviour
                         mover = controller;
                     }
 
+                    // mmm4xy (AirHold)
+                    else if (note.NoteDataType == NoteDataType.mmm4xy)
+                    {
+                        SusNotePlaybackDataMMM4XY mmm4xy = note.NoteData as SusNotePlaybackDataMMM4XY;
+
+                        GameObject instantiatedNote = Instantiate(AirHoldNoteObject, NotesParent, true);
+                        instantiatedNote.transform.localPosition = new Vector3(mmm4xy.X + mmm4xy.Size / 2f, 0, analyzeSetting.InstantiatePosition);
+                        AirHoldNoteController controller = instantiatedNote.GetComponent<AirHoldNoteController>();
+                        controller.AirHoldNoteSortingOrder = airHoldNoteSortingOrder;
+
+                        instantiatedNote.transform.GetChild(0).GetComponent<SpriteRenderer>().sortingOrder = airHoldNoteSortingOrder;
+
+                        controller.StepNoteMovers = new List<INoteMover>();
+
+                        // すべての中継点をインスタンス化
+                        foreach (SusNotePlaybackDataMMM4XYStep step in mmm4xy.Steps)
+                        {
+                            GameObject instantiatedStepNote = Instantiate(AirActionNoteObject, NotesParent, true);
+                            instantiatedStepNote.transform.localScale = new Vector3(step.Size, instantiatedStepNote.transform.localScale.y, instantiatedStepNote.transform.localScale.z);
+                            instantiatedStepNote.transform.localPosition = new Vector3(step.X + instantiatedStepNote.transform.localScale.x / 2f, instantiatedStepNote.transform.localPosition.y, analyzeSetting.InstantiatePosition);
+                            instantiatedStepNote.transform.SetParent(instantiatedNote.transform);
+                            controller.StepNoteMovers.Add(settingMover(instantiatedStepNote.GetComponent<AirActionNoteController>(), true, step.NoteData as SusNotePlaybackDataBase));
+
+                            instantiatedStepNote.GetComponent<MeshRenderer>().sortingOrder = airHoldNoteSortingOrder;
+
+                            // 影を生成
+                            GameObject instantiatedShadow = Instantiate(AirActionShadowObject, NotesParent, true);
+                            SpriteRenderer shadowSpriteRenderer = instantiatedShadow.GetComponent<SpriteRenderer>();
+                            shadowSpriteRenderer.size = new Vector2(step.Size, noteHeight);
+                            instantiatedShadow.transform.localPosition = new Vector3(step.X, 0, analyzeSetting.InstantiatePosition);
+                            AirActionShadowController shadowController = instantiatedShadow.GetComponent<AirActionShadowController>();
+                            controller.StepNoteMovers.Add(settingMover(shadowController, false, step.NoteData as SusNotePlaybackDataBase));
+
+                            instantiatedShadow.transform.SetParent(instantiatedStepNote.transform);
+                            shadowSpriteRenderer.sortingOrder = airActionShadowSortingOrder;
+                        }
+
+                        mover = controller;
+                    }
+
                     // Air
                     else if (note.NoteDataType == NoteDataType.mmm5x)
                     {
@@ -269,7 +314,7 @@ public class DemoPlayer : MonoBehaviour
                         controller.AirType = mmm5x.Type;
                         mover = controller;
 
-                        instantiatedNote.GetComponent<MeshRenderer>().sortingOrder = AirNoteSortingOrder;
+                        instantiatedNote.GetComponent<MeshRenderer>().sortingOrder = airNoteSortingOrder;
                     }
 
                     // MeasureLine
