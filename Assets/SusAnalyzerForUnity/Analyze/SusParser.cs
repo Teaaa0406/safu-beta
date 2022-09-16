@@ -82,26 +82,26 @@ namespace Tea.Safu.Parse
                     attributeDefinitions.Add(atr);
                 }
 
-                // TILzz (小節長)
+                // TILzz (スピード変化定義)
                 else if (GetMMM(lineInfo.Header) == "TIL")
                 {
                     HispeedDefinition hispeed = new HispeedDefinition();
                     hispeed.ZZ = lineInfo.Header.Substring(3, 2);
-                    if (!string.IsNullOrEmpty(lineInfo.Data))
+                    hispeed.hispeedInfos = new List<HispeedInfo>();
+
+                    string[] splitedData = lineInfo.Data.Replace(" ", "").Split(',');
+                    foreach (string data in splitedData)
                     {
-                        string[] splitedData = lineInfo.Data.Replace(" ", "").Split(',');
-                        foreach (string data in splitedData)
-                        {
-                            if (string.IsNullOrEmpty(data)) continue;
-                            HispeedInfo info = new HispeedInfo();
-                            string[] arr = data.Split('\'');
-                            info.Meas = int.Parse(arr[0]) + currentMeasureBase;
-                            arr = arr[1].Split(':');
-                            info.Tick = int.Parse(arr[0]);
-                            info.Speed = float.Parse(arr[1]);
-                        }
-                        hispeedDefinitions.Add(hispeed);
+                        if (string.IsNullOrEmpty(data)) continue;
+                        HispeedInfo info = new HispeedInfo();
+                        string[] arr = data.Split('\'');
+                        info.Meas = int.Parse(arr[0]) + currentMeasureBase;
+                        arr = arr[1].Split(':');
+                        info.Tick = int.Parse(arr[0]);
+                        info.Speed = float.Parse(arr[1]);
+                        hispeed.hispeedInfos.Add(info);
                     }
+                    hispeedDefinitions.Add(hispeed);
                 }
 
                 // mmm02 (小節長)
@@ -122,6 +122,7 @@ namespace Tea.Safu.Parse
 
             List<SusNoteDataBase> noteDatas = new List<SusNoteDataBase>();
             currentMeasureBase = 0;
+            HispeedDefinition currentHispeedDefinition = null;
             int readIndex = 0;
             foreach (SusLineInfo lineInfo in lineInfos)
             {
@@ -145,6 +146,18 @@ namespace Tea.Safu.Parse
                     }
                 }
 
+                // HISPEED (スピード変化)
+                else if (lineInfo.Header == "HISPEED")
+                {
+                    currentHispeedDefinition = hispeedDefinitions.Find((x) => x.ZZ == lineInfo.Data);
+                }
+
+                // HISPEED (スピード変化適用解除)
+                else if (lineInfo.Header == "NOSPEED")
+                {
+                    currentHispeedDefinition = null;
+                }
+
                 // mmm1x (タップ)
                 else if (lineInfo.Header.Substring(3, 1) == "1")
                 {
@@ -159,6 +172,7 @@ namespace Tea.Safu.Parse
                         mmm1x.LineDataCount = dataPartArray.Count;
                         mmm1x.DataIndex = i;
                         mmm1x.Data = dataPartArray[i];
+                        mmm1x.HispeedDefinition = currentHispeedDefinition;
                         mmm1x.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm1x.Type = Base36Util.Decode(dataPartArray[i][0]);
                         mmm1x.Size = Base36Util.Decode(dataPartArray[i][1]);
@@ -180,6 +194,7 @@ namespace Tea.Safu.Parse
                         mmm2xy.LineDataCount = dataPartArray.Count;
                         mmm2xy.DataIndex = i;
                         mmm2xy.Data = dataPartArray[i];
+                        mmm2xy.HispeedDefinition = currentHispeedDefinition;
                         mmm2xy.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm2xy.Y = GetY(lineInfo.Header);
                         mmm2xy.Type = Base36Util.Decode(dataPartArray[i][0]);
@@ -202,6 +217,7 @@ namespace Tea.Safu.Parse
                         mmm3xy.LineDataCount = dataPartArray.Count;
                         mmm3xy.DataIndex = i;
                         mmm3xy.Data = dataPartArray[i];
+                        mmm3xy.HispeedDefinition = currentHispeedDefinition;
                         mmm3xy.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm3xy.Y = GetY(lineInfo.Header);
                         mmm3xy.Type = Base36Util.Decode(dataPartArray[i][0]);
@@ -224,6 +240,7 @@ namespace Tea.Safu.Parse
                         mmm4xy.LineDataCount = dataPartArray.Count;
                         mmm4xy.DataIndex = i;
                         mmm4xy.Data = dataPartArray[i];
+                        mmm4xy.HispeedDefinition = currentHispeedDefinition;
                         mmm4xy.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm4xy.Y = GetY(lineInfo.Header);
                         mmm4xy.Type = Base36Util.Decode(dataPartArray[i][0]);
@@ -246,6 +263,7 @@ namespace Tea.Safu.Parse
                         mmm5x.LineDataCount = dataPartArray.Count;
                         mmm5x.DataIndex = i;
                         mmm5x.Data = dataPartArray[i];
+                        mmm5x.HispeedDefinition = currentHispeedDefinition;
                         mmm5x.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm5x.Type = Base36Util.Decode(dataPartArray[i][0]);
                         mmm5x.Size = Base36Util.Decode(dataPartArray[i][1]);
@@ -272,7 +290,7 @@ namespace Tea.Safu.Parse
             measureLengthDefinitions.Sort((x, y) => x.MeasureNumber - y.MeasureNumber);
 
             chartDatas.TicksPerBeat = tpb;
-            chartDatas.BpmDefinitions = bpmDefinitions;
+            chartDatas.bpmDefinitions = bpmDefinitions;
             chartDatas.AttributeDefinitions = attributeDefinitions;
             chartDatas.HispeedDefinitions = hispeedDefinitions;
             chartDatas.MeasureDefinitions = measureLengthDefinitions;
@@ -298,8 +316,8 @@ namespace Tea.Safu.Parse
                         metaDatas.ARTIST = lineInfo.Data; break;
                     case "GENRE":
                         metaDatas.TITLE = lineInfo.Data; break;
-                    case "DESIGER":
-                        metaDatas.DESIGER = lineInfo.Data; break;
+                    case "DESIGNER":
+                        metaDatas.DESIGNER = lineInfo.Data; break;
                     case "DIFFICULTY":
                         metaDatas.DIFFICULTY = new SusDifficulty(lineInfo.Data); break;
                     case "PLAYLEVEL":
@@ -323,6 +341,9 @@ namespace Tea.Safu.Parse
                     case "REQUEST":
                         string[] dataArr = lineInfo.Data.Split(' ');
                         metaDatas.REQUESTs.Add(new SusMetaRequest(dataArr[0], dataArr[1])); break;
+                    default:
+                        SusDebugger.LogWarning($"Bad or unsupported Metadata. (Metadata: {lineInfo.Header})");
+                        break;
                 }
             }
             return metaDatas;
@@ -345,6 +366,13 @@ namespace Tea.Safu.Parse
                     line = line.Replace(" ", "").Replace("\"", "");
                     int index = line.IndexOf(":");
                     lineInfos.Add(new SusLineInfo(line.Substring(0, index), line.Substring(index + 1, line.Length - index - 1), SusLineType.Chart));
+                }
+                else if (line.Contains("ATTRIBUTE") || line.Contains("NOATTRIBUTE") || line.Contains("HISPEED") || line.Contains("NOSPEED"))
+                {
+                    line = line.Replace("\"", "");
+                    int index = line.IndexOf(" ");
+                    if (index == -1) lineInfos.Add(new SusLineInfo(line, null, SusLineType.Meta));
+                    else lineInfos.Add(new SusLineInfo(line.Substring(0, index), line.Substring(index + 1, line.Length - index - 1), SusLineType.Chart));
                 }
                 else
                 {

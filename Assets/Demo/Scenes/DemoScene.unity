@@ -1320,7 +1320,7 @@ MonoBehaviour:
     instantiatePosition: 70
     judgmentPosition: 0
     startTiming: -1000
-  susAsset: {fileID: -6654734695004946927, guid: 9f84adb676dd76b43afac4684b6a6775, type: 3}
+  susAsset: {fileID: -6654734695004946927, guid: ef984193bffd3fc48be4e0f524bc0125, type: 3}
   metaDataText: {fileID: 1602798076}
   timingText: {fileID: 956323904}
   fpsText: {fileID: 2041855302}
@@ -1330,7 +1330,7 @@ MonoBehaviour:
   audioSource: {fileID: 1133641092}
   audioSourceBgm: {fileID: 1133641093}
   noteHeight: 1.5
-  playBgm: 1
+  playBgm: 0
   tapNoteObject: {fileID: 4567538138134139726, guid: 2386c2e86a65ae141b32ae94f34615ac, type: 3}
   exTapNoteObject: {fileID: 5832220979264618273, guid: 67312b4e71cdaff4fb50754b7d49d851, type: 3}
   flickNoteObject: {fileID: 7455048084351115865, guid: 818a5a66bc0d2174180a49d4154cef30, type: 3}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,8 +19,10 @@ namespace Tea.Safu.Models
         public NoteDataType NoteDataType { get; set; }
         public object NoteData { get; set; }
         public SusAnalyzer.SusAnalyzeSetting Setting { get; set; }
+        public HispeedDefinition HispeedDefinition { get; set; }
         public long EnabledTiming { get; set; }
         public long InstantiateTiming { get; set; }
+        public SusCalculationUtils calculationUtils { get; set; }
 
         /// <summary>
         /// 現在のタイミングからノートの位置を計算します。
@@ -29,7 +32,51 @@ namespace Tea.Safu.Models
         /// <returns></returns>
         public float CalNotePositionByTiming(long timing)
         {
-            long timingToJudgment = EnabledTiming - timing;
+            long timingToJudgment = 0;
+
+            if(HispeedDefinition == null)
+            {
+                timingToJudgment = EnabledTiming - timing;
+            }
+            else
+            {
+                
+                // ハイスピードを考慮した計算
+
+                // 計算対象のタイミング範囲
+                long calculateStartTiming;
+                long calculateEndTiming;
+                bool afterEnabledTiming = false;
+                if (timing <= EnabledTiming)
+                {
+                    calculateStartTiming = timing;
+                    calculateEndTiming = EnabledTiming;
+                }
+                else
+                {
+                    calculateStartTiming = EnabledTiming;
+                    calculateEndTiming = timing;
+                    afterEnabledTiming = true;
+                }
+
+                // 対象範囲内でのノートの移動距離
+                // ハイスピードの変化毎に処理
+                long calculatedTiming = calculateStartTiming;
+                while (calculatedTiming < calculateEndTiming)
+                {
+                    // ハイスピード適用情報
+                    HispeedDefinition.HighSpeedApplyingInfo applyingInfo = HispeedDefinition.GetHighSpeedApplyingInfoByTiming(calculatedTiming, calculationUtils);
+
+                    // ハイスピードの適用時間
+                    long applyingTiming = 0;
+                    if (applyingInfo.EndTiming == -1 || applyingInfo.EndTiming > calculateEndTiming) applyingTiming = calculateEndTiming - calculatedTiming;
+                    else applyingTiming = applyingInfo.EndTiming - calculateStartTiming;
+
+                    if(!afterEnabledTiming) timingToJudgment += (long)Math.Round(applyingTiming * applyingInfo.Hispeed, 0);
+                    else timingToJudgment -= (long)Math.Round(applyingTiming * applyingInfo.Hispeed, 0);
+                    calculatedTiming += applyingTiming;
+                }
+            }
             return timingToJudgment * CalDistancePerTiming();
         }
 
@@ -48,7 +95,7 @@ namespace Tea.Safu.Models
         public long CalInstantiateTiming(long startTiming)
         {
             long timing = startTiming;
-            for (long i = startTiming; i < EnabledTiming; i++)
+            for (long i = startTiming; i < EnabledTiming; i += 500)
             {
                 timing = i;
                 if (CalNotePositionByTiming(i) <= Setting.InstantiatePosition) break;

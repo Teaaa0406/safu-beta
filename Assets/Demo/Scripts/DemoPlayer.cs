@@ -389,7 +389,7 @@ public class DemoPlayer : MonoBehaviour
             $"SUBTITLE: {metadatas.SUBTITLE}\n" +
             $"ARTIST: {metadatas.ARTIST}\n" +
             $"GENRE: {metadatas.GENRE}\n" +
-            $"DESIGER: {metadatas.DESIGER}\n" +
+            $"DESIGNER: {metadatas.DESIGNER}\n" +
             $"DIFFICULTY: {metadatas.DIFFICULTY.GetDifficultyString()}\n" +
             $"PLAYLEVEL: {metadatas.PLAYLEVEL.GetPlayLevelString()}\n" +
             $"SONGID: {metadatas.SONGID}\n" +

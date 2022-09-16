@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Tea.Safu.Analyze;
 using Tea.Safu.SusDebug;
 
 namespace Tea.Safu.Models
@@ -21,7 +22,7 @@ namespace Tea.Safu.Models
     public class SusChartDatas
     {
         public int TicksPerBeat { get; set; }
-        public List<BpmDefinition> BpmDefinitions { get; set; }
+        public List<BpmDefinition> bpmDefinitions { get; set; }
         public List<AttributeDefinition> AttributeDefinitions { get; set; }
         public List<HispeedDefinition> HispeedDefinitions { get; set; }
         public List<MeasureLengthDefinition> MeasureDefinitions { get; set; }
@@ -46,6 +47,41 @@ namespace Tea.Safu.Models
     {
         public string ZZ { get; set; }
         public List<HispeedInfo> hispeedInfos { get; set; }
+
+        public struct HighSpeedApplyingInfo
+        {
+            public float Hispeed { get; set; }
+            /// <summary>
+            /// 終了タイミングが存在しない場合(=曲の最後まで適用)は -1 になる
+            /// </summary>
+            public long EndTiming { get; set; }
+        }
+
+        public HighSpeedApplyingInfo GetHighSpeedApplyingInfoByTiming(long timing, SusCalculationUtils utils)
+        {
+            HighSpeedApplyingInfo applyingInfo = new HighSpeedApplyingInfo();
+            bool setted = false;
+            for (int i = 0; i < hispeedInfos.Count; i++)
+            {
+                long enabledTiming = utils.CalEnabledTiming(hispeedInfos[i].Meas, hispeedInfos[i].Tick);
+                if (enabledTiming <= timing)
+                {
+                    applyingInfo.Hispeed = hispeedInfos[i].Speed;
+                    if (i + 1 < hispeedInfos.Count) applyingInfo.EndTiming = utils.CalEnabledTiming(hispeedInfos[i + 1].Meas, hispeedInfos[i + 1].Tick);
+                    else applyingInfo.EndTiming = -1;
+                    setted = true;
+                }
+                else if (enabledTiming > timing && !setted)
+                {
+                    applyingInfo.Hispeed = 1;
+                    if (i + 1 < hispeedInfos.Count) applyingInfo.EndTiming = utils.CalEnabledTiming(hispeedInfos[i + 1].Meas, hispeedInfos[i + 1].Tick);
+                    else applyingInfo.EndTiming = -1;
+                    break;
+                }
+                else if (enabledTiming > timing) break;
+            }
+            return applyingInfo;
+        }
     }
 
     public class HispeedInfo
@@ -74,7 +110,7 @@ namespace Tea.Safu.Models
         public string SUBTITLE { get; set; }
         public string ARTIST { get; set; }
         public string GENRE { get; set; }
-        public string DESIGER { get; set; }
+        public string DESIGNER { get; set; }
         public SusDifficulty DIFFICULTY { get; set; }
         public SusPlayLevel PLAYLEVEL { get; set; }
         public string SONGID { get; set; }
