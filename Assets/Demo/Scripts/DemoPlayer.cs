@@ -60,7 +60,7 @@ public class DemoPlayer : MonoBehaviour
     private float time;
     private bool playedGuideSe = false;
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (movingTiming)
         {
@@ -188,6 +188,23 @@ public class DemoPlayer : MonoBehaviour
                                     mover = controller;
 
                                     spriteRenderer.sortingOrder = flickNoteSortingOrder;
+                                }
+                                break;
+
+                            // 仕様書には記載されていませんでしたが、4 5 6 はおそらくエフェクトの異なるEXタップノートです。
+                            // ここでは通常のEXタップノートとして生成します。
+                            case 4:
+                            case 5:
+                            case 6:
+                                {
+                                    GameObject instantiatedNote = Instantiate(exTapNoteObject, NotesParent, true);
+                                    instantiatedNote.transform.localPosition = new Vector3(mmm1x.X, 0, analyzeSetting.InstantiatePosition);
+                                    SpriteRenderer spriteRenderer = instantiatedNote.GetComponent<SpriteRenderer>();
+                                    spriteRenderer.size = new Vector2(mmm1x.Size, noteHeight);
+                                    ExTapNoteController controller = instantiatedNote.GetComponent<ExTapNoteController>();
+                                    mover = controller;
+
+                                    spriteRenderer.sortingOrder = exTapNoteSortingOrder;
                                 }
                                 break;
                         }

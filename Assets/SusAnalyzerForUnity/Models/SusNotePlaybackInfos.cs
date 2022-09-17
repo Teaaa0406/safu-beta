@@ -34,7 +34,7 @@ namespace Tea.Safu.Models
         {
             long timingToJudgment = 0;
 
-            if(HispeedDefinition == null)
+            if(HispeedDefinition == null || !Setting.ConsiderationHighSpeed)
             {
                 timingToJudgment = EnabledTiming - timing;
             }
@@ -64,16 +64,16 @@ namespace Tea.Safu.Models
                 long calculatedTiming = calculateStartTiming;
                 while (calculatedTiming < calculateEndTiming)
                 {
-                    // ハイスピード適用情報
+                    // ハイスピード適用情報                    
                     HispeedDefinition.HighSpeedApplyingInfo applyingInfo = HispeedDefinition.GetHighSpeedApplyingInfoByTiming(calculatedTiming, calculationUtils);
 
                     // ハイスピードの適用時間
                     long applyingTiming = 0;
                     if (applyingInfo.EndTiming == -1 || applyingInfo.EndTiming > calculateEndTiming) applyingTiming = calculateEndTiming - calculatedTiming;
-                    else applyingTiming = applyingInfo.EndTiming - calculateStartTiming;
+                    else applyingTiming = applyingInfo.EndTiming - calculatedTiming;
 
-                    if(!afterEnabledTiming) timingToJudgment += (long)Math.Round(applyingTiming * applyingInfo.Hispeed, 0);
-                    else timingToJudgment -= (long)Math.Round(applyingTiming * applyingInfo.Hispeed, 0);
+                    if(!afterEnabledTiming) timingToJudgment += (long)(applyingTiming * applyingInfo.Hispeed);
+                    else timingToJudgment -= (long)(applyingTiming * applyingInfo.Hispeed);
                     calculatedTiming += applyingTiming;
                 }
             }
@@ -95,7 +95,7 @@ namespace Tea.Safu.Models
         public long CalInstantiateTiming(long startTiming)
         {
             long timing = startTiming;
-            for (long i = startTiming; i < EnabledTiming; i += 500)
+            for (long i = startTiming; i < EnabledTiming; i += 50)
             {
                 timing = i;
                 if (CalNotePositionByTiming(i) <= Setting.InstantiatePosition) break;

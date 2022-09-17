@@ -1320,6 +1320,7 @@ MonoBehaviour:
     instantiatePosition: 70
     judgmentPosition: 0
     startTiming: -1000
+    considerationHighSpeed: 1
   susAsset: {fileID: -6654734695004946927, guid: ef984193bffd3fc48be4e0f524bc0125, type: 3}
   metaDataText: {fileID: 1602798076}
   timingText: {fileID: 956323904}

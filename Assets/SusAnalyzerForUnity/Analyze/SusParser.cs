@@ -1,10 +1,8 @@
 using System.IO;
-using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
 using Tea.Safu.Util;
 using Tea.Safu.Models;
-using Tea.Safu.Analyze;
 using Tea.Safu.SusDebug;
 
 
@@ -101,6 +99,7 @@ namespace Tea.Safu.Parse
                         info.Speed = float.Parse(arr[1]);
                         hispeed.hispeedInfos.Add(info);
                     }
+                    hispeed.hispeedInfos = hispeed.hispeedInfos.OrderBy(rec => rec.Meas).ThenBy(rec => rec.Tick).ToList();
                     hispeedDefinitions.Add(hispeed);
                 }
 
@@ -292,7 +291,6 @@ namespace Tea.Safu.Parse
             chartDatas.TicksPerBeat = tpb;
             chartDatas.bpmDefinitions = bpmDefinitions;
             chartDatas.AttributeDefinitions = attributeDefinitions;
-            chartDatas.HispeedDefinitions = hispeedDefinitions;
             chartDatas.MeasureDefinitions = measureLengthDefinitions;
             chartDatas.NoteDatas = noteDatas;
             return chartDatas;

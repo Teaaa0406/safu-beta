@@ -142,6 +142,7 @@ public class SlideNoteController : NoteMoverBase, INoteMover
 
                 // ‹Èü•ªŠ„”
                 int splitCount = Mathf.FloorToInt((endPos - startPos) / splitlength);
+                if (splitCount < 0) splitCount *= -1;
 
                 Vector3[] curvePoints = GetCurvePoints(startPosV3, controlPosV3, endPosV3, splitCount);
 

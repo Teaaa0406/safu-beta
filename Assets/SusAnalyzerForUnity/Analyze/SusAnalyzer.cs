@@ -29,19 +29,22 @@ namespace Tea.Safu.Analyze
             [SerializeField] private float instantiatePosition;
             [SerializeField] private float judgmentPosition;
             [SerializeField] private long startTiming;
+            [SerializeField] private bool considerationHighSpeed;
 
-            public SusAnalyzeSetting(float speed, float instantiatePosition, float judgmentPosition, long startTiming)
+            public SusAnalyzeSetting(float speed, float instantiatePosition, float judgmentPosition, long startTiming, bool considerationHighSpeed)
             {
                 this.speed = speed;
                 this.instantiatePosition = instantiatePosition;
                 this.judgmentPosition = judgmentPosition;
                 this.startTiming = startTiming;
+                this.considerationHighSpeed = considerationHighSpeed;
             }
 
             public float Speed { get => speed; set => speed = value; }
             public float InstantiatePosition { get => instantiatePosition; set => instantiatePosition = value; }
             public float JudgmentPosition { get => judgmentPosition; set => judgmentPosition = value; }
             public long StartTiming { get => startTiming; set => startTiming = value; }
+            public bool ConsiderationHighSpeed { get => considerationHighSpeed; set => considerationHighSpeed = value; }
         }
 
         /// <summary>
@@ -109,6 +112,7 @@ namespace Tea.Safu.Analyze
                 if (noteData.DataType == NoteDataType.mmm1x)
                 {
                     NoteDataMMM1X mmm1xData = noteData.NoteData as NoteDataMMM1X;
+                    if (mmm1xData.HispeedDefinition != null) mmm1xData.HispeedDefinition.SetUp(calculationUtils);
                     SusNotePlaybackDataMMM1X mmm1x = new SusNotePlaybackDataMMM1X();
                     mmm1x.calculationUtils = calculationUtils;
                     mmm1x.Setting = setting;
@@ -127,6 +131,7 @@ namespace Tea.Safu.Analyze
                     NoteDataMMM2XY mmm2xyData = noteData.NoteData as NoteDataMMM2XY;
                     if (mmm2xyData.Type == 1)
                     {
+                        if (mmm2xyData.HispeedDefinition != null) mmm2xyData.HispeedDefinition.SetUp(calculationUtils);
                         SusNotePlaybackDataMMM2XY mmm2xy = new SusNotePlaybackDataMMM2XY();
                         mmm2xy.calculationUtils = calculationUtils;
                         mmm2xy.Setting = setting;
@@ -148,6 +153,7 @@ namespace Tea.Safu.Analyze
 
                             if (nextMmm2xy.Type == 2)
                             {
+                                if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                 SusNotePlaybackDataMMM2XYEnd mmm2xyEnd = new SusNotePlaybackDataMMM2XYEnd();
                                 mmm2xyEnd.calculationUtils = calculationUtils;
                                 mmm2xyEnd.Setting = setting;
@@ -168,6 +174,7 @@ namespace Tea.Safu.Analyze
                     NoteDataMMM3XY mmm3xyData = noteData.NoteData as NoteDataMMM3XY;
                     if (mmm3xyData.Type == 1)
                     {
+                        if (mmm3xyData.HispeedDefinition != null) mmm3xyData.HispeedDefinition.SetUp(calculationUtils);
                         SusNotePlaybackDataMMM3XY mmm3xy = new SusNotePlaybackDataMMM3XY();
                         mmm3xy.calculationUtils = calculationUtils;
                         mmm3xy.Setting = setting;
@@ -194,6 +201,7 @@ namespace Tea.Safu.Analyze
                             switch (nextMmm3xy.Type)
                             {
                                 case 2:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYStep mmm3xyEnd = new SusNotePlaybackDataMMM3XYStep();
                                     mmm3xyEnd.calculationUtils = calculationUtils;
                                     mmm3xyEnd.Setting = setting;
@@ -209,6 +217,7 @@ namespace Tea.Safu.Analyze
                                     end = true;
                                     break;
                                 case 3:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYStep mmm3xyStep = new SusNotePlaybackDataMMM3XYStep();
                                     mmm3xyStep.calculationUtils = calculationUtils;
                                     mmm3xyStep.Setting = setting;
@@ -223,6 +232,7 @@ namespace Tea.Safu.Analyze
                                     mmm3xy.Steps.Add(mmm3xyStep);
                                     break;
                                 case 4:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYCurveControl mmm3xyCurveControl = new SusNotePlaybackDataMMM3XYCurveControl();
                                     mmm3xyCurveControl.calculationUtils = calculationUtils;
                                     mmm3xyCurveControl.Setting = setting;
@@ -235,6 +245,7 @@ namespace Tea.Safu.Analyze
                                     mmm3xy.CurveControls.Add(mmm3xyCurveControl);
                                     break;
                                 case 5:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYStep mmm3xyInvisibleStep = new SusNotePlaybackDataMMM3XYStep();
                                     mmm3xyInvisibleStep.calculationUtils = calculationUtils;
                                     mmm3xyInvisibleStep.Setting = setting;
@@ -260,6 +271,7 @@ namespace Tea.Safu.Analyze
                     NoteDataMMM4XY mmm4xyData = noteData.NoteData as NoteDataMMM4XY;
                     if (mmm4xyData.Type == 1)
                     {
+                        if (mmm4xyData.HispeedDefinition != null) mmm4xyData.HispeedDefinition.SetUp(calculationUtils);
                         SusNotePlaybackDataMMM4XY mmm4xy = new SusNotePlaybackDataMMM4XY();
                         mmm4xy.calculationUtils = calculationUtils;
                         mmm4xy.Setting = setting;
@@ -286,6 +298,7 @@ namespace Tea.Safu.Analyze
                             switch (nextMmm4xy.Type)
                             {
                                 case 2:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYStep mmm4xyEnd = new SusNotePlaybackDataMMM4XYStep();
                                     mmm4xyEnd.calculationUtils = calculationUtils;
                                     mmm4xyEnd.Setting = setting;
@@ -301,6 +314,7 @@ namespace Tea.Safu.Analyze
                                     end = true;
                                     break;
                                 case 3:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYStep mmm4xyStep = new SusNotePlaybackDataMMM4XYStep();
                                     mmm4xyStep.calculationUtils = calculationUtils;
                                     mmm4xyStep.Setting = setting;
@@ -315,6 +329,7 @@ namespace Tea.Safu.Analyze
                                     mmm4xy.Steps.Add(mmm4xyStep);
                                     break;
                                 case 4:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYCurveControl mmm4xyCurveControl = new SusNotePlaybackDataMMM4XYCurveControl();
                                     mmm4xyCurveControl.calculationUtils = calculationUtils;
                                     mmm4xyCurveControl.Setting = setting;
@@ -327,6 +342,7 @@ namespace Tea.Safu.Analyze
                                     mmm4xy.CurveControls.Add(mmm4xyCurveControl);
                                     break;
                                 case 5:
+                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYStep mmm4xyInvisibleStep = new SusNotePlaybackDataMMM4XYStep();
                                     mmm4xyInvisibleStep.calculationUtils = calculationUtils;
                                     mmm4xyInvisibleStep.Setting = setting;
@@ -350,6 +366,7 @@ namespace Tea.Safu.Analyze
                 else if (noteData.DataType == NoteDataType.mmm5x)
                 {
                     NoteDataMMM5X mmm5xData = noteData.NoteData as NoteDataMMM5X;
+                    if (mmm5xData.HispeedDefinition != null) mmm5xData.HispeedDefinition.SetUp(calculationUtils);
                     SusNotePlaybackDataMMM5X mmm5x = new SusNotePlaybackDataMMM5X();
                     mmm5x.calculationUtils = calculationUtils;
                     mmm5x.Setting = setting;
