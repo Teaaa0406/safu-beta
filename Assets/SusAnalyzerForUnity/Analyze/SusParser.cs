@@ -11,6 +11,20 @@ namespace Tea.Safu.Parse
 {
     public class SusParser
     {
+        struct MeasureHsApplyInfo
+        {
+            public MeasureHsApplyInfo(int measure, string zz)
+            {
+                Measure = measure;
+                Zz = zz;
+            }
+
+            public int Measure { get; set; }
+            public string Zz { get; set; }
+        }
+
+
+
         /// <summary>
         /// SusAsset から SusObject を作成します。
         /// ここでは計算処理は行われません。
@@ -294,6 +308,39 @@ namespace Tea.Safu.Parse
                     SusDebugger.LogWarning($"Bad or unsupported header. (header: {lineInfo.Header})");
                 }
                 readIndex += 1;
+            }
+
+            // 小節線データ作成
+            // 最大小節数を取得
+            int maxMmm = 0;
+            currentMeasureBase = 0;
+            foreach (SusLineInfo lineInfo in lineInfos)
+            {
+                if (lineInfo.Header.Substring(3, 1) == "1" || lineInfo.Header.Substring(3, 1) == "2" || lineInfo.Header.Substring(3, 1) == "3" || lineInfo.Header.Substring(3, 1) == "4" || lineInfo.Header.Substring(3, 1) == "5")
+                {
+                    int measure = int.Parse(GetMMM(lineInfo.Header)) + currentMeasureBase;
+                    if (measure > maxMmm) maxMmm = measure;
+                }
+                else if (lineInfo.Header == "MEASUREBS")
+                {
+                    currentMeasureBase = int.Parse(lineInfo.Data);
+                }
+            }
+
+            List<MeasureHsApplyInfo> hsApplyInfo = new List<MeasureHsApplyInfo>();
+            for(int i = 0; i < lineInfos.Count; i++)
+            {
+            }
+
+            for(int i = 0; i < maxMmm; i++)
+            {
+                NoteDataMeasureLine measureLine = new NoteDataMeasureLine();
+                measureLine.MeasureNumber = i;
+                measureLine.LineDataCount = 1;
+                measureLine.DataIndex = 0;
+                measureLine.HispeedZz = currentHispeedZz;
+
+                noteDatas.Add(measureLine);
             }
 
             measureLengthDefinitions.Sort((x, y) => x.MeasureNumber - y.MeasureNumber);
