@@ -70,7 +70,8 @@ public class AnalysisScreen : MonoBehaviour
             }
         }
 
-        messageText.text = "";
+        if (messageText == null) return;
+            messageText.text = "";
         foreach(string line in messageLines) messageText.text += $"\n{line}";
     }
 
