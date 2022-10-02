@@ -61,29 +61,27 @@ namespace Tea.Safu.Models
             foreach (HispeedInfo info in hispeedInfos) info.enabledTiming = utils.CalEnabledTiming(info.Meas, info.Tick);
         }
 
-        public HighSpeedApplyingInfo GetHighSpeedApplyingInfoByTiming(long timing, SusCalculationUtils utils)
+        public HighSpeedApplyingInfo GetHighSpeedApplyingInfoByTiming(long timing)
         {
             HighSpeedApplyingInfo applyingInfo = new HighSpeedApplyingInfo();
-            bool setted = false;
+
+            // ハイスピード変更適用タイミングが指定タイミングに一番近いものを探索
+            int nearest = -1;
             for (int i = 0; i < hispeedInfos.Count; i++)
             {
                 long enabledTiming = hispeedInfos[i].enabledTiming;
-                if (enabledTiming <= timing)
-                {
-                    applyingInfo.Hispeed = hispeedInfos[i].Speed;
-                    if (i + 1 < hispeedInfos.Count) applyingInfo.EndTiming = hispeedInfos[i + 1].enabledTiming;
-                    else applyingInfo.EndTiming = -1;
-                    setted = true;
-                }
-                else if (enabledTiming > timing && !setted)
-                {
-                    applyingInfo.Hispeed = 1;
-                    if (i + 1 < hispeedInfos.Count) applyingInfo.EndTiming = hispeedInfos[i + 1].enabledTiming;
-                    else applyingInfo.EndTiming = -1;
-                    break;
-                }
-                else if (enabledTiming > timing) break;
+
+                if (enabledTiming > timing) break;
+                else if (enabledTiming <= timing) nearest = i;
             }
+
+            // 探索されたハイスピードからデータを生成
+            if(nearest == -1) applyingInfo.Hispeed = 1;
+            else applyingInfo.Hispeed = hispeedInfos[nearest].Speed;
+
+            if (nearest + 1 < hispeedInfos.Count) applyingInfo.EndTiming = hispeedInfos[nearest + 1].enabledTiming;
+            else applyingInfo.EndTiming = -1;
+
             return applyingInfo;
         }
     }

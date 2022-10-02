@@ -109,7 +109,6 @@ namespace Tea.Safu.Models
         }
     }
 
-    /// <summary>
     /// –½—ß mmm2xy ‚Ìî•ñ (ƒz[ƒ‹ƒh)
     /// </summary>
     public class NoteDataMMM2XY : SusNoteDataBase
@@ -172,6 +171,18 @@ namespace Tea.Safu.Models
         public NoteDataMMM5X()
         {
             DataType = NoteDataType.mmm5x;
+            NoteData = this;
+        }
+    }
+
+    /// <summary>
+    /// ¬ßü‚Ìî•ñ
+    /// </summary>
+    public class NoteDataMeasureLine : SusNoteDataBase
+    {
+        public NoteDataMeasureLine()
+        {
+            DataType = NoteDataType.MeasureLine;
             NoteData = this;
         }
     }

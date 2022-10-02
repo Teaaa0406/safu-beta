@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using Tea.Safu.Parse;
 using Tea.Safu.Models;
@@ -10,7 +10,13 @@ namespace Tea.Safu.Analyze
 {
     public class SusAnalyzer
     {
+        public delegate void OnReceivedAnalyzingMessageDelegate(string msg, bool overrideLine = false);
+        private OnReceivedAnalyzingMessageDelegate onReceivedAnalyzingMessage;
         private SusAnalyzeSetting setting;
+
+        public OnReceivedAnalyzingMessageDelegate OnReceivedAnalyzingMessage { get => onReceivedAnalyzingMessage; set => onReceivedAnalyzingMessage = value; }
+
+
 
         public SusAnalyzer(SusAnalyzeSetting setting)
         {
@@ -30,6 +36,7 @@ namespace Tea.Safu.Analyze
             [SerializeField] private float judgmentPosition;
             [SerializeField] private long startTiming;
             [SerializeField] private bool considerationHighSpeed;
+            [SerializeField] private int instantiateCycle;
 
             public SusAnalyzeSetting(float speed, float instantiatePosition, float judgmentPosition, long startTiming, bool considerationHighSpeed)
             {
@@ -45,6 +52,16 @@ namespace Tea.Safu.Analyze
             public float JudgmentPosition { get => judgmentPosition; set => judgmentPosition = value; }
             public long StartTiming { get => startTiming; set => startTiming = value; }
             public bool ConsiderationHighSpeed { get => considerationHighSpeed; set => considerationHighSpeed = value; }
+            public int InstantiateCycle {
+                get {
+                    if(instantiateCycle <= 1)
+                    {
+                        SusDebugger.LogWarning($"SusAnalyzeSetting: instantiateCycle cannot be set to a value less than 1 (value: {instantiateCycle})\n1 was applied instead.");
+                        return 1;
+                    }
+                    return instantiateCycle;
+                }
+                set => instantiateCycle = value; }
         }
 
         /// <summary>
@@ -69,22 +86,41 @@ namespace Tea.Safu.Analyze
         /// SusAssetのパース&解析処理を行います。
         /// </summary>
         /// <param name="susAsset"></param>
-        /// <param name="setting"></param>
         /// <returns></returns>
         public SusAnalyzeResult Analyze(SusAsset susAsset)
         {
+            
+            // 解析メッセージの送信
+            bool shouldSendAnalyzingMessage = false;
+            System.Diagnostics.Stopwatch stopwatch = null;
+            void sendAnalyzingMessage(string msg, bool overrideLine, bool addProcessingTime)
+            {
+                if(addProcessingTime) msg += $" ({stopwatch.ElapsedMilliseconds}ms)";
+                if (shouldSendAnalyzingMessage) onReceivedAnalyzingMessage(msg, overrideLine);
+            }
+
+            // 解析メッセージを送信するか
+            if (onReceivedAnalyzingMessage != null)
+            {
+                shouldSendAnalyzingMessage = true;
+                stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
+            }
+
             SusAnalyzeResult analyzeResult = new SusAnalyzeResult();
             SusNotePlaybackDatas notePlaybackDatas = new SusNotePlaybackDatas();
             notePlaybackDatas.Notes = new List<SusNotePlaybackDataBase>();
 
             int measureCount = 0;
 
-            // パース
+            /* パース処理 */
+
+            sendAnalyzingMessage("パース処理を開始", false, false);
             SusParser susParser = new SusParser();
-            SusObject susObject = susParser.ToSusObject(susAsset);
+            SusObject susObject = susParser.ToSusObject(susAsset, setting, (msg, overrideLine, addProcessingTime) => sendAnalyzingMessage(msg, overrideLine, addProcessingTime));
 
-            /* 解析処理 */
-
+            /* 解析処理開始 */
+            sendAnalyzingMessage("解析処理を開始", false, false);
             List<SusNotePlaybackDataBase> noteDates = new List<SusNotePlaybackDataBase>();
             SusChartDatas chartDatas = susObject.ChartDatas;
 
@@ -95,14 +131,21 @@ namespace Tea.Safu.Analyze
 
             SusCalculationUtils calculationUtils = new SusCalculationUtils(chartDatas, bpmChanges);
 
-            // 有効タイミングでソート
+            // 有効タイミングを計算&ソート
+            sendAnalyzingMessage("ノーツ有効タイミング計算中...", false, true);
             foreach (SusNoteDataBase noteData in chartDatas.NoteDatas)
                 noteData.EnabledTiming = calculationUtils.CalEnabledTiming(noteData);
             chartDatas.NoteDatas.Sort((x, y) => x.EnabledTiming.CompareTo(y.EnabledTiming));
 
+            sendAnalyzingMessage("ノーツ再生データ作成中...", false, true);
             int readIndex = 0;
+            float progress = 0;
+
             foreach (SusNoteDataBase noteData in chartDatas.NoteDatas)
             {
+                progress = readIndex / (float)chartDatas.NoteDatas.Count;
+                sendAnalyzingMessage($"{(progress * 100f).ToString("f1")}% ( {readIndex} / {chartDatas.NoteDatas.Count} )", true, true);
+
                 if (noteData.DataType == NoteDataType.mmm08)
                 {
                     readIndex += 1;
@@ -157,7 +200,7 @@ namespace Tea.Safu.Analyze
                                 SusNotePlaybackDataMMM2XYEnd mmm2xyEnd = new SusNotePlaybackDataMMM2XYEnd();
                                 mmm2xyEnd.calculationUtils = calculationUtils;
                                 mmm2xyEnd.Setting = setting;
-                                mmm2xyEnd.HispeedDefinition = noteData.HispeedDefinition;
+                                mmm2xyEnd.HispeedDefinition = nextNoteData.HispeedDefinition;
                                 mmm2xyEnd.calculationUtils = calculationUtils;
                                 mmm2xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
                                 mmm2xyEnd.InstantiateTiming = mmm2xy.CalInstantiateTiming(setting.StartTiming);
@@ -205,7 +248,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM3XYStep mmm3xyEnd = new SusNotePlaybackDataMMM3XYStep();
                                     mmm3xyEnd.calculationUtils = calculationUtils;
                                     mmm3xyEnd.Setting = setting;
-                                    mmm3xyEnd.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm3xyEnd.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm3xyEnd.calculationUtils = calculationUtils;
                                     mmm3xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyEnd.X = nextMmm3xy.X;
@@ -221,7 +264,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM3XYStep mmm3xyStep = new SusNotePlaybackDataMMM3XYStep();
                                     mmm3xyStep.calculationUtils = calculationUtils;
                                     mmm3xyStep.Setting = setting;
-                                    mmm3xyStep.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm3xyStep.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm3xyStep.calculationUtils = calculationUtils;
                                     mmm3xyStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyStep.X = nextMmm3xy.X;
@@ -236,7 +279,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM3XYCurveControl mmm3xyCurveControl = new SusNotePlaybackDataMMM3XYCurveControl();
                                     mmm3xyCurveControl.calculationUtils = calculationUtils;
                                     mmm3xyCurveControl.Setting = setting;
-                                    mmm3xyCurveControl.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm3xyCurveControl.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm3xyCurveControl.calculationUtils = calculationUtils;
                                     mmm3xyCurveControl.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyCurveControl.X = nextMmm3xy.X;
@@ -249,7 +292,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM3XYStep mmm3xyInvisibleStep = new SusNotePlaybackDataMMM3XYStep();
                                     mmm3xyInvisibleStep.calculationUtils = calculationUtils;
                                     mmm3xyInvisibleStep.Setting = setting;
-                                    mmm3xyInvisibleStep.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm3xyInvisibleStep.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm3xyInvisibleStep.calculationUtils = calculationUtils;
                                     mmm3xyInvisibleStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyInvisibleStep.X = nextMmm3xy.X;
@@ -302,7 +345,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM4XYStep mmm4xyEnd = new SusNotePlaybackDataMMM4XYStep();
                                     mmm4xyEnd.calculationUtils = calculationUtils;
                                     mmm4xyEnd.Setting = setting;
-                                    mmm4xyEnd.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm4xyEnd.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm4xyEnd.calculationUtils = calculationUtils;
                                     mmm4xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyEnd.X = nextMmm4xy.X;
@@ -318,7 +361,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM4XYStep mmm4xyStep = new SusNotePlaybackDataMMM4XYStep();
                                     mmm4xyStep.calculationUtils = calculationUtils;
                                     mmm4xyStep.Setting = setting;
-                                    mmm4xyStep.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm4xyStep.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm4xyStep.calculationUtils = calculationUtils;
                                     mmm4xyStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyStep.X = nextMmm4xy.X;
@@ -333,7 +376,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM4XYCurveControl mmm4xyCurveControl = new SusNotePlaybackDataMMM4XYCurveControl();
                                     mmm4xyCurveControl.calculationUtils = calculationUtils;
                                     mmm4xyCurveControl.Setting = setting;
-                                    mmm4xyCurveControl.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm4xyCurveControl.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm4xyCurveControl.calculationUtils = calculationUtils;
                                     mmm4xyCurveControl.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyCurveControl.X = nextMmm4xy.X;
@@ -346,7 +389,7 @@ namespace Tea.Safu.Analyze
                                     SusNotePlaybackDataMMM4XYStep mmm4xyInvisibleStep = new SusNotePlaybackDataMMM4XYStep();
                                     mmm4xyInvisibleStep.calculationUtils = calculationUtils;
                                     mmm4xyInvisibleStep.Setting = setting;
-                                    mmm4xyInvisibleStep.HispeedDefinition = noteData.HispeedDefinition;
+                                    mmm4xyInvisibleStep.HispeedDefinition = nextNoteData.HispeedDefinition;
                                     mmm4xyInvisibleStep.calculationUtils = calculationUtils;
                                     mmm4xyInvisibleStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyInvisibleStep.X = nextMmm4xy.X;
@@ -366,7 +409,7 @@ namespace Tea.Safu.Analyze
                 else if (noteData.DataType == NoteDataType.mmm5x)
                 {
                     NoteDataMMM5X mmm5xData = noteData.NoteData as NoteDataMMM5X;
-                    if (mmm5xData.HispeedDefinition != null) mmm5xData.HispeedDefinition.SetUp(calculationUtils);
+                    if (mmm5xData.HispeedDefinition != null) noteData.HispeedDefinition.SetUp(calculationUtils);
                     SusNotePlaybackDataMMM5X mmm5x = new SusNotePlaybackDataMMM5X();
                     mmm5x.calculationUtils = calculationUtils;
                     mmm5x.Setting = setting;
@@ -379,13 +422,28 @@ namespace Tea.Safu.Analyze
                     notePlaybackDatas.Notes.Add(mmm5x);
                 }
 
-                // 小節数を数える
-                if (noteData.MeasureNumber > measureCount) measureCount = noteData.MeasureNumber;
+                else if (noteData.DataType == NoteDataType.MeasureLine)
+                {
+                    if (noteData.HispeedDefinition != null) noteData.HispeedDefinition.SetUp(calculationUtils);
+                    SusNotePlaybackDataMeasureLine measureLine = new SusNotePlaybackDataMeasureLine();
+                    measureLine.calculationUtils = calculationUtils;
+                    measureLine.Setting = setting;
+                    measureLine.HispeedDefinition = noteData.HispeedDefinition;
+                    measureLine.EnabledTiming = noteData.EnabledTiming;
+
+                    measureLine.InstantiateTiming = measureLine.CalInstantiateTiming(setting.StartTiming);
+                    notePlaybackDatas.Notes.Add(measureLine);
+                }
+
+                    // 小節数を数える
+                    if (noteData.MeasureNumber > measureCount) measureCount = noteData.MeasureNumber;
                 readIndex += 1;
             }
 
+            /*
+            sendAnalyzingMessage("小節線データ作成中...", false, true);
             // 小節線データを作成
-            for(int i = 0; i < measureCount; i++)
+            for (int i = 0; i < measureCount; i++)
             {
                 SusNotePlaybackDataMeasureLine measureLine = new SusNotePlaybackDataMeasureLine();
                 measureLine.Setting = setting;
@@ -393,12 +451,26 @@ namespace Tea.Safu.Analyze
 
                 measureLine.InstantiateTiming = measureLine.CalInstantiateTiming(setting.StartTiming);
                 notePlaybackDatas.Notes.Add(measureLine);
-            }
+            }*/
 
+            sendAnalyzingMessage("譜面データをソート中...", false, true);
             notePlaybackDatas.Notes.Sort((x, y) => x.EnabledTiming.CompareTo(y.EnabledTiming));
             analyzeResult.NotePlaybackDatas = notePlaybackDatas;
             analyzeResult.MetaDatas = susObject.MetaDatas;
+
+            sendAnalyzingMessage("アナライズ完了", false, false);
             return analyzeResult;
+        }
+
+        /// <summary>
+        /// SusAssetのパース&解析処理を非同期で行います。
+        /// </summary>
+        /// <param name="susAsset"></param>
+        /// <returns></returns>
+        public async Task<SusAnalyzeResult> AnalyzeAsync(SusAsset susAsset)
+        {
+            SusAnalyzeResult result = await Task.Run(() => Analyze(susAsset));
+            return result;
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Tea.Safu.Models
                 while (calculatedTiming < calculateEndTiming)
                 {
                     // ハイスピード適用情報                    
-                    HispeedDefinition.HighSpeedApplyingInfo applyingInfo = HispeedDefinition.GetHighSpeedApplyingInfoByTiming(calculatedTiming, calculationUtils);
+                    HispeedDefinition.HighSpeedApplyingInfo applyingInfo = HispeedDefinition.GetHighSpeedApplyingInfoByTiming(calculatedTiming);
 
                     // ハイスピードの適用時間
                     long applyingTiming = 0;
@@ -95,7 +95,7 @@ namespace Tea.Safu.Models
         public long CalInstantiateTiming(long startTiming)
         {
             long timing = startTiming;
-            for (long i = startTiming; i < EnabledTiming; i += 50)
+            for (long i = startTiming; i < EnabledTiming - Setting.InstantiateCycle; i += Setting.InstantiateCycle)
             {
                 timing = i;
                 if (CalNotePositionByTiming(i) <= Setting.InstantiatePosition) break;

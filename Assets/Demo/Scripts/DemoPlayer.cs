@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +15,6 @@ public class DemoPlayer : MonoBehaviour
 
     [SerializeField] private Text metaDataText;
     [SerializeField] private Text timingText;
-    [SerializeField] private Text fpsText;
 
     [SerializeField] private AudioClip guideSe;
     [SerializeField] private AudioClip bgm;
@@ -56,7 +55,7 @@ public class DemoPlayer : MonoBehaviour
     [SerializeField] private int airActionShadowSortingOrder;
     [SerializeField] private int measureLineSortingOrder;
 
-    // ÔøΩfÔøΩÔøΩÔøΩ÷åW
+    // ÉfÉÇä÷åW
     [SerializeField] private AnalysisScreen analysisScreen;
     private SynchronizationContext SyncContext;
 
@@ -82,10 +81,14 @@ public class DemoPlayer : MonoBehaviour
     /// <summary>
     /// SusÇÃâêÕÇçsÇ¢Ç‹Ç∑ÅB
     /// </summary>
-    public void Analyze()
+    public async void Analyze()
     {
         SusAnalyzer susAnalyzer = new SusAnalyzer(analyzeSetting);
-        analyzeResult = susAnalyzer.Analyze(susAsset);
+        susAnalyzer.OnReceivedAnalyzingMessage += OnReceivedAnalyzingMessage;
+
+        analysisScreen.gameObject.SetActive(true);
+        analyzeResult = await susAnalyzer.AnalyzeAsync(susAsset);
+        analysisScreen.gameObject.SetActive(false);
 
         SetMetadataText(analyzeResult.MetaDatas);
     }

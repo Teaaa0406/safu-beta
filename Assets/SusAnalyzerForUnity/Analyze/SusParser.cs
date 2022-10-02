@@ -1,10 +1,11 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Tea.Safu.Analyze;
 using Tea.Safu.Util;
 using Tea.Safu.Models;
 using Tea.Safu.SusDebug;
-
 
 namespace Tea.Safu.Parse
 {
@@ -16,13 +17,15 @@ namespace Tea.Safu.Parse
         /// </summary>
         /// <param name="susAsset">SusAsset</param>
         /// <returns></returns>
-        public SusObject ToSusObject(SusAsset susAsset)
+        public SusObject ToSusObject(SusAsset susAsset, SusAnalyzer.SusAnalyzeSetting setting, Action<string, bool, bool> sendMesssageAction = null)
         {
+            SusObject susObject = new SusObject();
+
+            sendMesssageAction("SUSファイルを読み取り中...", false, true);
             List<SusLineInfo> lineInfos = ToLineInfos(susAsset);
 
-            SusObject susObject = new SusObject();
-            
             // メタデータパース
+            if (sendMesssageAction != null) sendMesssageAction("メタデータをパース中...", false, true);
             susObject.MetaDatas = ToSusMetaDatas(lineInfos);
 
             // ticks_per_beat を取得
@@ -32,12 +35,13 @@ namespace Tea.Safu.Parse
             else tpb = int.Parse(tpbReq.Value as string);
 
             // 譜面データパース
-            susObject.ChartDatas = ToSusChartDatas(lineInfos, tpb);
+            if (sendMesssageAction != null) sendMesssageAction("譜面データをパース中...", false, true);
+            susObject.ChartDatas = ToSusChartDatas(lineInfos, tpb, setting);
 
             return susObject;
         }
 
-        private SusChartDatas ToSusChartDatas(List<SusLineInfo> lineInfos, int tpb)
+        private SusChartDatas ToSusChartDatas(List<SusLineInfo> lineInfos, int tpb, SusAnalyzer.SusAnalyzeSetting setting)
         {
             SusChartDatas chartDatas = new SusChartDatas();
             int currentMeasureBase = 0;
@@ -120,12 +124,18 @@ namespace Tea.Safu.Parse
             }
 
             List<SusNoteDataBase> noteDatas = new List<SusNoteDataBase>();
-            currentMeasureBase = 0;
             HispeedDefinition currentHispeedDefinition = null;
+            currentMeasureBase = 0;
             int readIndex = 0;
+
             foreach (SusLineInfo lineInfo in lineInfos)
             {
                 if (lineInfo.LineType != SusLineType.Chart) continue;
+                if (GetMMM(lineInfo.Header) == "BPM") continue;
+                if (GetMMM(lineInfo.Header) == "ATR") continue;
+                if (GetMMM(lineInfo.Header) == "TIL") continue;
+                if (lineInfo.Header.Substring(3, 2) == "02") continue;
+                if (lineInfo.Header == "MEASUREBS") continue;
 
                 // mmm08 (BPM変化)
                 else if (lineInfo.Header.Substring(3, 2) == "08")
@@ -148,7 +158,7 @@ namespace Tea.Safu.Parse
                 // HISPEED (スピード変化)
                 else if (lineInfo.Header == "HISPEED")
                 {
-                    currentHispeedDefinition = hispeedDefinitions.Find((x) => x.ZZ == lineInfo.Data);
+                    if(setting.ConsiderationHighSpeed) currentHispeedDefinition = hispeedDefinitions.Find((x) => x.ZZ == lineInfo.Data);
                 }
 
                 // HISPEED (スピード変化適用解除)
@@ -161,7 +171,7 @@ namespace Tea.Safu.Parse
                 else if (lineInfo.Header.Substring(3, 1) == "1")
                 {
                     List<string[]> dataPartArray = ChartDataPartToArray(lineInfo.Data);
-                    for(int i = 0; i < dataPartArray.Count; i++)
+                    for (int i = 0; i < dataPartArray.Count; i++)
                     {
                         string dataStr = dataPartArray[i][0] + dataPartArray[i][1];
                         if (dataStr == "00") continue;
