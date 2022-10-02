@@ -56,9 +56,18 @@ public class DemoPlayer : MonoBehaviour
     [SerializeField] private int airActionShadowSortingOrder;
     [SerializeField] private int measureLineSortingOrder;
 
+    // �f���֌W
+    [SerializeField] private AnalysisScreen analysisScreen;
+    private SynchronizationContext SyncContext;
+
     private long timing;
     private float time;
     private bool playedGuideSe = false;
+
+    private void Start()
+    {
+        SyncContext = SynchronizationContext.Current;
+    }
 
     private void FixedUpdate()
     {
@@ -362,7 +371,6 @@ public class DemoPlayer : MonoBehaviour
                 if (!mover.Destroyed)
                 {
                     mover.MoveClock(timing);
-                    fpsText.text = $"FPS: {((float)1f / (float)Time.deltaTime).ToString("F1")}";
                 }
             }
 
