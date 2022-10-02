@@ -36,7 +36,8 @@ public class SlideNoteController : NoteMoverBase, INoteMover
             guideSeAction();
             playedSe = true;
         }
-        if (timing > StepNoteMovers[StepNoteMovers.Count - 1].NotePlaybackData.EnabledTiming + 250) Destroy();
+        //if (timing > StepNoteMovers[StepNoteMovers.Count - 1].NotePlaybackData.EnabledTiming + 250) Destroy();
+        if (timing > StepNoteMovers[StepNoteMovers.Count - 1].NotePlaybackData.EnabledTiming) Destroy();
     }
 
     // スライドメッシュの生成

@@ -35,7 +35,8 @@ public class HoldNoteController : NoteMoverBase, INoteMover
             guideSeAction();
             playedSe = true;
         }
-        if (timing > EndNoteMover.NotePlaybackData.EnabledTiming + 250) Destroy();
+        //if (timing > EndNoteMover.NotePlaybackData.EnabledTiming + 250) Destroy();
+        if (timing > EndNoteMover.NotePlaybackData.EnabledTiming) Destroy();
     }
 
     // ホールドメッシュの生成

@@ -50,7 +50,8 @@ public class AirNoteController: NoteMoverBase, INoteMover
             guideSeAction();
             playedSe = true;
         }
-        if (timing > NotePlaybackData.EnabledTiming + 250) Destroy();
+        //if (timing > NotePlaybackData.EnabledTiming + 250) Destroy();
+        if (timing > NotePlaybackData.EnabledTiming) Destroy();
     }
 
     // Air‚Ì¶¬

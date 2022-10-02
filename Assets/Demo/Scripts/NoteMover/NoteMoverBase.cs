@@ -44,7 +44,8 @@ public class NoteMoverBase : MonoBehaviour
             guideSeAction();
             playedSe = true;
         }
-        if(timing > notePlaybackData.EnabledTiming + 250) Destroy();
+        //if(timing > notePlaybackData.EnabledTiming + 250) Destroy();
+        if (timing > notePlaybackData.EnabledTiming) Destroy();
     }
 
     public void Destroy()
