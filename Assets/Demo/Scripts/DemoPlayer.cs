@@ -87,7 +87,8 @@ public class DemoPlayer : MonoBehaviour
         susAnalyzer.OnReceivedAnalyzingMessage += OnReceivedAnalyzingMessage;
 
         analysisScreen.gameObject.SetActive(true);
-        analyzeResult = await susAnalyzer.AnalyzeAsync(susAsset);
+        if (Application.platform == RuntimePlatform.WebGLPlayer) analyzeResult = susAnalyzer.Analyze(susAsset);
+        else analyzeResult = await susAnalyzer.AnalyzeAsync(susAsset);
         analysisScreen.gameObject.SetActive(false);
 
         SetMetadataText(analyzeResult.MetaDatas);
