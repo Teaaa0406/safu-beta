@@ -77,7 +77,7 @@ namespace Tea.Safu.Models
         public int DataIndex { get; set; }
         public string[] Data { get; set; }
         public long EnabledTiming { get; set; }
-        public HispeedDefinition HispeedDefinition { get; set; }
+        public string HispeedZz  { get; set; }
     }
 
 

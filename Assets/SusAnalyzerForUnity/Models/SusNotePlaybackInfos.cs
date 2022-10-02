@@ -18,11 +18,11 @@ namespace Tea.Safu.Models
     {
         public NoteDataType NoteDataType { get; set; }
         public object NoteData { get; set; }
+        public SusCalculationUtils CalculationUtils { get; set; }
         public SusAnalyzer.SusAnalyzeSetting Setting { get; set; }
         public HispeedDefinition HispeedDefinition { get; set; }
         public long EnabledTiming { get; set; }
         public long InstantiateTiming { get; set; }
-        public SusCalculationUtils calculationUtils { get; set; }
 
         /// <summary>
         /// 現在のタイミングからノートの位置を計算します。
@@ -77,16 +77,7 @@ namespace Tea.Safu.Models
                     calculatedTiming += applyingTiming;
                 }
             }
-            return timingToJudgment * CalDistancePerTiming();
-        }
-
-        /// <summary>
-        /// タイミング毎の移動距離を計算します
-        /// </summary>
-        /// <returns></returns>
-        public float CalDistancePerTiming()
-        {
-            return (Setting.InstantiatePosition - Setting.JudgmentPosition) / (Setting.Speed * 1000f);
+            return timingToJudgment * CalculationUtils.CalDistancePerTiming(Setting);
         }
 
         /// <summary>
@@ -95,10 +86,10 @@ namespace Tea.Safu.Models
         public long CalInstantiateTiming(long startTiming)
         {
             long timing = startTiming;
-            for (long i = startTiming; i < EnabledTiming - Setting.InstantiateCycle; i += Setting.InstantiateCycle)
+            for (long i = startTiming; i < EnabledTiming; i += Setting.InstantiateCycle)
             {
                 timing = i;
-                if (CalNotePositionByTiming(i) <= Setting.InstantiatePosition) break;
+                if (CalNotePositionByTiming(i) <= Setting.InstantiatePosition + Setting.InstantiateCycle * CalculationUtils.CalDistancePerTiming(Setting)) break;
             }
             return timing;
         }

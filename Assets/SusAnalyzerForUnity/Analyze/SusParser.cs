@@ -124,7 +124,7 @@ namespace Tea.Safu.Parse
             }
 
             List<SusNoteDataBase> noteDatas = new List<SusNoteDataBase>();
-            HispeedDefinition currentHispeedDefinition = null;
+            string currentHispeedZz = null;
             currentMeasureBase = 0;
             int readIndex = 0;
 
@@ -158,13 +158,13 @@ namespace Tea.Safu.Parse
                 // HISPEED (スピード変化)
                 else if (lineInfo.Header == "HISPEED")
                 {
-                    if(setting.ConsiderationHighSpeed) currentHispeedDefinition = hispeedDefinitions.Find((x) => x.ZZ == lineInfo.Data);
+                    if (setting.ConsiderationHighSpeed) currentHispeedZz = lineInfo.Data;
                 }
 
                 // HISPEED (スピード変化適用解除)
                 else if (lineInfo.Header == "NOSPEED")
                 {
-                    currentHispeedDefinition = null;
+                    currentHispeedZz = null;
                 }
 
                 // mmm1x (タップ)
@@ -181,7 +181,7 @@ namespace Tea.Safu.Parse
                         mmm1x.LineDataCount = dataPartArray.Count;
                         mmm1x.DataIndex = i;
                         mmm1x.Data = dataPartArray[i];
-                        mmm1x.HispeedDefinition = currentHispeedDefinition;
+                        mmm1x.HispeedZz = currentHispeedZz;
                         mmm1x.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm1x.Type = Base36Util.Decode(dataPartArray[i][0]);
                         mmm1x.Size = Base36Util.Decode(dataPartArray[i][1]);
@@ -203,7 +203,7 @@ namespace Tea.Safu.Parse
                         mmm2xy.LineDataCount = dataPartArray.Count;
                         mmm2xy.DataIndex = i;
                         mmm2xy.Data = dataPartArray[i];
-                        mmm2xy.HispeedDefinition = currentHispeedDefinition;
+                        mmm2xy.HispeedZz = currentHispeedZz;
                         mmm2xy.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm2xy.Y = GetY(lineInfo.Header);
                         mmm2xy.Type = Base36Util.Decode(dataPartArray[i][0]);
@@ -226,7 +226,7 @@ namespace Tea.Safu.Parse
                         mmm3xy.LineDataCount = dataPartArray.Count;
                         mmm3xy.DataIndex = i;
                         mmm3xy.Data = dataPartArray[i];
-                        mmm3xy.HispeedDefinition = currentHispeedDefinition;
+                        mmm3xy.HispeedZz = currentHispeedZz;
                         mmm3xy.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm3xy.Y = GetY(lineInfo.Header);
                         mmm3xy.Type = Base36Util.Decode(dataPartArray[i][0]);
@@ -249,7 +249,7 @@ namespace Tea.Safu.Parse
                         mmm4xy.LineDataCount = dataPartArray.Count;
                         mmm4xy.DataIndex = i;
                         mmm4xy.Data = dataPartArray[i];
-                        mmm4xy.HispeedDefinition = currentHispeedDefinition;
+                        mmm4xy.HispeedZz = currentHispeedZz;
                         mmm4xy.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm4xy.Y = GetY(lineInfo.Header);
                         mmm4xy.Type = Base36Util.Decode(dataPartArray[i][0]);
@@ -272,7 +272,7 @@ namespace Tea.Safu.Parse
                         mmm5x.LineDataCount = dataPartArray.Count;
                         mmm5x.DataIndex = i;
                         mmm5x.Data = dataPartArray[i];
-                        mmm5x.HispeedDefinition = currentHispeedDefinition;
+                        mmm5x.HispeedZz = currentHispeedZz;
                         mmm5x.X = Base36Util.Decode(GetX(lineInfo.Header));
                         mmm5x.Type = Base36Util.Decode(dataPartArray[i][0]);
                         mmm5x.Size = Base36Util.Decode(dataPartArray[i][1]);
@@ -302,6 +302,7 @@ namespace Tea.Safu.Parse
             chartDatas.bpmDefinitions = bpmDefinitions;
             chartDatas.AttributeDefinitions = attributeDefinitions;
             chartDatas.MeasureDefinitions = measureLengthDefinitions;
+            chartDatas.HispeedDefinitions = hispeedDefinitions;
             chartDatas.NoteDatas = noteDatas;
             return chartDatas;
         }

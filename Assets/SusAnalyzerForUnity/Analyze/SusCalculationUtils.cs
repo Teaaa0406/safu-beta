@@ -165,5 +165,14 @@ namespace Tea.Safu.Analyze
             }
             return enabledTimeInMeasure;
         }
+
+        /// <summary>
+        /// タイミング毎の移動距離を計算します
+        /// </summary>
+        /// <returns></returns>
+        public float CalDistancePerTiming(SusAnalyzer.SusAnalyzeSetting setting)
+        {
+            return (setting.InstantiatePosition - setting.JudgmentPosition) / (setting.Speed * 1000f);
+        }
     }
 }

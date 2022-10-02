@@ -38,13 +38,14 @@ namespace Tea.Safu.Analyze
             [SerializeField] private bool considerationHighSpeed;
             [SerializeField] private int instantiateCycle;
 
-            public SusAnalyzeSetting(float speed, float instantiatePosition, float judgmentPosition, long startTiming, bool considerationHighSpeed)
+            public SusAnalyzeSetting(float speed, float instantiatePosition, float judgmentPosition, long startTiming, bool considerationHighSpeed, int instantiateCycle)
             {
                 this.speed = speed;
                 this.instantiatePosition = instantiatePosition;
                 this.judgmentPosition = judgmentPosition;
                 this.startTiming = startTiming;
                 this.considerationHighSpeed = considerationHighSpeed;
+                this.instantiateCycle = instantiateCycle;
             }
 
             public float Speed { get => speed; set => speed = value; }
@@ -52,16 +53,7 @@ namespace Tea.Safu.Analyze
             public float JudgmentPosition { get => judgmentPosition; set => judgmentPosition = value; }
             public long StartTiming { get => startTiming; set => startTiming = value; }
             public bool ConsiderationHighSpeed { get => considerationHighSpeed; set => considerationHighSpeed = value; }
-            public int InstantiateCycle {
-                get {
-                    if(instantiateCycle <= 1)
-                    {
-                        SusDebugger.LogWarning($"SusAnalyzeSetting: instantiateCycle cannot be set to a value less than 1 (value: {instantiateCycle})\n1 was applied instead.");
-                        return 1;
-                    }
-                    return instantiateCycle;
-                }
-                set => instantiateCycle = value; }
+            public int InstantiateCycle { get => instantiateCycle; set => instantiateCycle = value; }
         }
 
         /// <summary>
@@ -111,7 +103,12 @@ namespace Tea.Safu.Analyze
             SusNotePlaybackDatas notePlaybackDatas = new SusNotePlaybackDatas();
             notePlaybackDatas.Notes = new List<SusNotePlaybackDataBase>();
 
-            int measureCount = 0;
+            // SUS解析設定の確認
+            if (setting.InstantiateCycle < 1)
+            {
+                SusDebugger.LogWarning($"SusAnalyzeSetting: instantiateCycle cannot be set to a value less than 1 (value: {setting.InstantiateCycle})\n1 was applied instead.");
+                setting.InstantiateCycle = 1;
+            }
 
             /* パース処理 */
 
@@ -137,6 +134,10 @@ namespace Tea.Safu.Analyze
                 noteData.EnabledTiming = calculationUtils.CalEnabledTiming(noteData);
             chartDatas.NoteDatas.Sort((x, y) => x.EnabledTiming.CompareTo(y.EnabledTiming));
 
+            sendAnalyzingMessage("ハイスピード定義をセットアップ中...", false, true);
+            foreach (HispeedDefinition definition in chartDatas.HispeedDefinitions)
+                definition.SetUp(calculationUtils);
+
             sendAnalyzingMessage("ノーツ再生データ作成中...", false, true);
             int readIndex = 0;
             float progress = 0;
@@ -155,12 +156,10 @@ namespace Tea.Safu.Analyze
                 if (noteData.DataType == NoteDataType.mmm1x)
                 {
                     NoteDataMMM1X mmm1xData = noteData.NoteData as NoteDataMMM1X;
-                    if (mmm1xData.HispeedDefinition != null) mmm1xData.HispeedDefinition.SetUp(calculationUtils);
                     SusNotePlaybackDataMMM1X mmm1x = new SusNotePlaybackDataMMM1X();
-                    mmm1x.calculationUtils = calculationUtils;
+                    mmm1x.CalculationUtils = calculationUtils;
                     mmm1x.Setting = setting;
-                    mmm1x.HispeedDefinition = noteData.HispeedDefinition;
-                    mmm1x.calculationUtils = calculationUtils;
+                    mmm1x.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == noteData.HispeedZz);
                     mmm1x.EnabledTiming = noteData.EnabledTiming;
                     mmm1x.X = mmm1xData.X;
                     mmm1x.Type = mmm1xData.Type;
@@ -174,12 +173,10 @@ namespace Tea.Safu.Analyze
                     NoteDataMMM2XY mmm2xyData = noteData.NoteData as NoteDataMMM2XY;
                     if (mmm2xyData.Type == 1)
                     {
-                        if (mmm2xyData.HispeedDefinition != null) mmm2xyData.HispeedDefinition.SetUp(calculationUtils);
                         SusNotePlaybackDataMMM2XY mmm2xy = new SusNotePlaybackDataMMM2XY();
-                        mmm2xy.calculationUtils = calculationUtils;
+                        mmm2xy.CalculationUtils = calculationUtils;
                         mmm2xy.Setting = setting;
-                        mmm2xy.HispeedDefinition = noteData.HispeedDefinition;
-                        mmm2xy.calculationUtils = calculationUtils;
+                        mmm2xy.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == noteData.HispeedZz);
                         mmm2xy.EnabledTiming = noteData.EnabledTiming;
                         mmm2xy.X = mmm2xyData.X;
                         mmm2xy.Size = mmm2xyData.Size;
@@ -196,12 +193,10 @@ namespace Tea.Safu.Analyze
 
                             if (nextMmm2xy.Type == 2)
                             {
-                                if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                 SusNotePlaybackDataMMM2XYEnd mmm2xyEnd = new SusNotePlaybackDataMMM2XYEnd();
-                                mmm2xyEnd.calculationUtils = calculationUtils;
+                                mmm2xyEnd.CalculationUtils = calculationUtils;
                                 mmm2xyEnd.Setting = setting;
-                                mmm2xyEnd.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                mmm2xyEnd.calculationUtils = calculationUtils;
+                                mmm2xyEnd.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                 mmm2xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
                                 mmm2xyEnd.InstantiateTiming = mmm2xy.CalInstantiateTiming(setting.StartTiming);
                                 mmm2xy.EndNote = mmm2xyEnd;
@@ -217,12 +212,10 @@ namespace Tea.Safu.Analyze
                     NoteDataMMM3XY mmm3xyData = noteData.NoteData as NoteDataMMM3XY;
                     if (mmm3xyData.Type == 1)
                     {
-                        if (mmm3xyData.HispeedDefinition != null) mmm3xyData.HispeedDefinition.SetUp(calculationUtils);
                         SusNotePlaybackDataMMM3XY mmm3xy = new SusNotePlaybackDataMMM3XY();
-                        mmm3xy.calculationUtils = calculationUtils;
+                        mmm3xy.CalculationUtils = calculationUtils;
                         mmm3xy.Setting = setting;
-                        mmm3xy.HispeedDefinition = noteData.HispeedDefinition;
-                        mmm3xy.calculationUtils = calculationUtils;
+                        mmm3xy.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == noteData.HispeedZz);
                         mmm3xy.EnabledTiming = noteData.EnabledTiming;
                         mmm3xy.X = mmm3xyData.X;
                         mmm3xy.Size = mmm3xyData.Size;
@@ -244,12 +237,10 @@ namespace Tea.Safu.Analyze
                             switch (nextMmm3xy.Type)
                             {
                                 case 2:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYStep mmm3xyEnd = new SusNotePlaybackDataMMM3XYStep();
-                                    mmm3xyEnd.calculationUtils = calculationUtils;
+                                    mmm3xyEnd.CalculationUtils = calculationUtils;
                                     mmm3xyEnd.Setting = setting;
-                                    mmm3xyEnd.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm3xyEnd.calculationUtils = calculationUtils;
+                                    mmm3xyEnd.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm3xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyEnd.X = nextMmm3xy.X;
                                     mmm3xyEnd.Size = nextMmm3xy.Size;
@@ -260,12 +251,10 @@ namespace Tea.Safu.Analyze
                                     end = true;
                                     break;
                                 case 3:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYStep mmm3xyStep = new SusNotePlaybackDataMMM3XYStep();
-                                    mmm3xyStep.calculationUtils = calculationUtils;
+                                    mmm3xyStep.CalculationUtils = calculationUtils;
                                     mmm3xyStep.Setting = setting;
-                                    mmm3xyStep.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm3xyStep.calculationUtils = calculationUtils;
+                                    mmm3xyStep.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm3xyStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyStep.X = nextMmm3xy.X;
                                     mmm3xyStep.Size = nextMmm3xy.Size;
@@ -275,12 +264,10 @@ namespace Tea.Safu.Analyze
                                     mmm3xy.Steps.Add(mmm3xyStep);
                                     break;
                                 case 4:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYCurveControl mmm3xyCurveControl = new SusNotePlaybackDataMMM3XYCurveControl();
-                                    mmm3xyCurveControl.calculationUtils = calculationUtils;
+                                    mmm3xyCurveControl.CalculationUtils = calculationUtils;
                                     mmm3xyCurveControl.Setting = setting;
-                                    mmm3xyCurveControl.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm3xyCurveControl.calculationUtils = calculationUtils;
+                                    mmm3xyCurveControl.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm3xyCurveControl.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyCurveControl.X = nextMmm3xy.X;
                                     mmm3xyCurveControl.Size = nextMmm3xy.Size;
@@ -288,12 +275,10 @@ namespace Tea.Safu.Analyze
                                     mmm3xy.CurveControls.Add(mmm3xyCurveControl);
                                     break;
                                 case 5:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM3XYStep mmm3xyInvisibleStep = new SusNotePlaybackDataMMM3XYStep();
-                                    mmm3xyInvisibleStep.calculationUtils = calculationUtils;
+                                    mmm3xyInvisibleStep.CalculationUtils = calculationUtils;
                                     mmm3xyInvisibleStep.Setting = setting;
-                                    mmm3xyInvisibleStep.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm3xyInvisibleStep.calculationUtils = calculationUtils;
+                                    mmm3xyInvisibleStep.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm3xyInvisibleStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm3xyInvisibleStep.X = nextMmm3xy.X;
                                     mmm3xyInvisibleStep.Size = nextMmm3xy.Size;
@@ -314,12 +299,10 @@ namespace Tea.Safu.Analyze
                     NoteDataMMM4XY mmm4xyData = noteData.NoteData as NoteDataMMM4XY;
                     if (mmm4xyData.Type == 1)
                     {
-                        if (mmm4xyData.HispeedDefinition != null) mmm4xyData.HispeedDefinition.SetUp(calculationUtils);
                         SusNotePlaybackDataMMM4XY mmm4xy = new SusNotePlaybackDataMMM4XY();
-                        mmm4xy.calculationUtils = calculationUtils;
+                        mmm4xy.CalculationUtils = calculationUtils;
                         mmm4xy.Setting = setting;
-                        mmm4xy.HispeedDefinition = noteData.HispeedDefinition;
-                        mmm4xy.calculationUtils = calculationUtils;
+                        mmm4xy.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == noteData.HispeedZz);
                         mmm4xy.EnabledTiming = noteData.EnabledTiming;
                         mmm4xy.X = mmm4xyData.X;
                         mmm4xy.Size = mmm4xyData.Size;
@@ -341,12 +324,10 @@ namespace Tea.Safu.Analyze
                             switch (nextMmm4xy.Type)
                             {
                                 case 2:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYStep mmm4xyEnd = new SusNotePlaybackDataMMM4XYStep();
-                                    mmm4xyEnd.calculationUtils = calculationUtils;
+                                    mmm4xyEnd.CalculationUtils = calculationUtils;
                                     mmm4xyEnd.Setting = setting;
-                                    mmm4xyEnd.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm4xyEnd.calculationUtils = calculationUtils;
+                                    mmm4xyEnd.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm4xyEnd.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyEnd.X = nextMmm4xy.X;
                                     mmm4xyEnd.Size = nextMmm4xy.Size;
@@ -357,12 +338,10 @@ namespace Tea.Safu.Analyze
                                     end = true;
                                     break;
                                 case 3:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYStep mmm4xyStep = new SusNotePlaybackDataMMM4XYStep();
-                                    mmm4xyStep.calculationUtils = calculationUtils;
+                                    mmm4xyStep.CalculationUtils = calculationUtils;
                                     mmm4xyStep.Setting = setting;
-                                    mmm4xyStep.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm4xyStep.calculationUtils = calculationUtils;
+                                    mmm4xyStep.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm4xyStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyStep.X = nextMmm4xy.X;
                                     mmm4xyStep.Size = nextMmm4xy.Size;
@@ -372,12 +351,10 @@ namespace Tea.Safu.Analyze
                                     mmm4xy.Steps.Add(mmm4xyStep);
                                     break;
                                 case 4:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYCurveControl mmm4xyCurveControl = new SusNotePlaybackDataMMM4XYCurveControl();
-                                    mmm4xyCurveControl.calculationUtils = calculationUtils;
+                                    mmm4xyCurveControl.CalculationUtils = calculationUtils;
                                     mmm4xyCurveControl.Setting = setting;
-                                    mmm4xyCurveControl.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm4xyCurveControl.calculationUtils = calculationUtils;
+                                    mmm4xyCurveControl.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm4xyCurveControl.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyCurveControl.X = nextMmm4xy.X;
                                     mmm4xyCurveControl.Size = nextMmm4xy.Size;
@@ -385,12 +362,10 @@ namespace Tea.Safu.Analyze
                                     mmm4xy.CurveControls.Add(mmm4xyCurveControl);
                                     break;
                                 case 5:
-                                    if (nextNoteData.HispeedDefinition != null) nextNoteData.HispeedDefinition.SetUp(calculationUtils);
                                     SusNotePlaybackDataMMM4XYStep mmm4xyInvisibleStep = new SusNotePlaybackDataMMM4XYStep();
-                                    mmm4xyInvisibleStep.calculationUtils = calculationUtils;
+                                    mmm4xyInvisibleStep.CalculationUtils = calculationUtils;
                                     mmm4xyInvisibleStep.Setting = setting;
-                                    mmm4xyInvisibleStep.HispeedDefinition = nextNoteData.HispeedDefinition;
-                                    mmm4xyInvisibleStep.calculationUtils = calculationUtils;
+                                    mmm4xyInvisibleStep.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == nextNoteData.HispeedZz);
                                     mmm4xyInvisibleStep.EnabledTiming = nextNoteData.EnabledTiming;
                                     mmm4xyInvisibleStep.X = nextMmm4xy.X;
                                     mmm4xyInvisibleStep.Size = nextMmm4xy.Size;
@@ -409,11 +384,10 @@ namespace Tea.Safu.Analyze
                 else if (noteData.DataType == NoteDataType.mmm5x)
                 {
                     NoteDataMMM5X mmm5xData = noteData.NoteData as NoteDataMMM5X;
-                    if (mmm5xData.HispeedDefinition != null) noteData.HispeedDefinition.SetUp(calculationUtils);
                     SusNotePlaybackDataMMM5X mmm5x = new SusNotePlaybackDataMMM5X();
-                    mmm5x.calculationUtils = calculationUtils;
+                    mmm5x.CalculationUtils = calculationUtils;
                     mmm5x.Setting = setting;
-                    mmm5x.HispeedDefinition = noteData.HispeedDefinition;
+                    mmm5x.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == noteData.HispeedZz);
                     mmm5x.EnabledTiming = noteData.EnabledTiming;
                     mmm5x.X = mmm5xData.X;
                     mmm5x.Type = mmm5xData.Type;
@@ -424,19 +398,16 @@ namespace Tea.Safu.Analyze
 
                 else if (noteData.DataType == NoteDataType.MeasureLine)
                 {
-                    if (noteData.HispeedDefinition != null) noteData.HispeedDefinition.SetUp(calculationUtils);
                     SusNotePlaybackDataMeasureLine measureLine = new SusNotePlaybackDataMeasureLine();
-                    measureLine.calculationUtils = calculationUtils;
+                    measureLine.CalculationUtils = calculationUtils;
                     measureLine.Setting = setting;
-                    measureLine.HispeedDefinition = noteData.HispeedDefinition;
+                    measureLine.HispeedDefinition = chartDatas.HispeedDefinitions.Find((x) => x.ZZ == noteData.HispeedZz);
                     measureLine.EnabledTiming = noteData.EnabledTiming;
 
                     measureLine.InstantiateTiming = measureLine.CalInstantiateTiming(setting.StartTiming);
                     notePlaybackDatas.Notes.Add(measureLine);
                 }
 
-                    // 小節数を数える
-                    if (noteData.MeasureNumber > measureCount) measureCount = noteData.MeasureNumber;
                 readIndex += 1;
             }
 

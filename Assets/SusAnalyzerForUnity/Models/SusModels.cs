@@ -25,6 +25,7 @@ namespace Tea.Safu.Models
         public List<BpmDefinition> bpmDefinitions { get; set; }
         public List<AttributeDefinition> AttributeDefinitions { get; set; }
         public List<MeasureLengthDefinition> MeasureDefinitions { get; set; }
+        public List<HispeedDefinition> HispeedDefinitions { get; set; }
         public List<SusNoteDataBase> NoteDatas { get; set; }
     }
 
