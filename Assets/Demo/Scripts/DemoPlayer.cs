@@ -408,25 +408,35 @@ public class DemoPlayer : MonoBehaviour
 
     private void SetMetadataText(SusMetadatas metadatas)
     {
-        metaDataText.text =
-            $"[Metadatas]\n" +
-            $"TITLE: {metadatas.TITLE}\n" +
-            $"SUBTITLE: {metadatas.SUBTITLE}\n" +
-            $"ARTIST: {metadatas.ARTIST}\n" +
-            $"GENRE: {metadatas.GENRE}\n" +
-            $"DESIGNER: {metadatas.DESIGNER}\n" +
-            $"DIFFICULTY: {metadatas.DIFFICULTY.GetDifficultyString()}\n" +
-            $"PLAYLEVEL: {metadatas.PLAYLEVEL.GetPlayLevelString()}\n" +
-            $"SONGID: {metadatas.SONGID}\n" +
-            $"WAVE: {metadatas.WAVE}\n" +
-            $"WAVEOFFSET: {metadatas.WAVEOFFSET}\n" +
-            $"JACKET: {metadatas.JACKET}\n" +
-            $"BACKGROUND: {metadatas.BACKGROUND}\n" +
-            $"MOVIE: {metadatas.MOVIE}\n" +
-            $"MOVIEOFFSET: {metadatas.MOVIEOFFSET}\n" +
-            $"BASEBPM: {metadatas.BASEBPM}";
+        metaDataText.text = $"[Metadatas]\n";
+        if (metadatas.TITLE != null) metaDataText.text += $"TITLE: {metadatas.TITLE}\n";
+        if (metadatas.SUBTITLE != null) metaDataText.text += $"SUBTITLE: {metadatas.SUBTITLE}\n";
+        if (metadatas.ARTIST != null) metaDataText.text += $"ARTIST: {metadatas.ARTIST}\n";
+        if (metadatas.GENRE != null) metaDataText.text += $"GENRE: {metadatas.GENRE}\n";
+        if (metadatas.DESIGNER != null) metaDataText.text += $"DESIGNER: {metadatas.DESIGNER}\n";
+        if (metadatas.DIFFICULTY != null) metaDataText.text += $"DIFFICULTY: {metadatas.DIFFICULTY.GetDifficultyString()}\n";
+        if (metadatas.PLAYLEVEL != null) metaDataText.text += $"PLAYLEVEL: {metadatas.PLAYLEVEL.GetPlayLevelString()}\n";
+        if (metadatas.SONGID != null) metaDataText.text += $"SONGID: {metadatas.SONGID}\n";
+        if (metadatas.WAVE != null) metaDataText.text += $"WAVE: {metadatas.WAVE}\n";
+        if (metadatas.WAVEOFFSET != null) metaDataText.text += $"WAVEOFFSET: {metadatas.WAVEOFFSET}\n";
+        if (metadatas.JACKET != null) metaDataText.text += $"JACKET: {metadatas.JACKET}\n";
+        if (metadatas.BACKGROUND != null) metaDataText.text += $"BACKGROUND: {metadatas.BACKGROUND}\n";
+        if (metadatas.MOVIE != null) metaDataText.text += $"MOVIE: {metadatas.MOVIE}\n";
+        if (metadatas.MOVIEOFFSET != null) metaDataText.text += $"MOVIEOFFSET: {metadatas.MOVIEOFFSET}\n";
+        if (metadatas.BASEBPM != null) metaDataText.text += $"BASEBPM: {metadatas.BASEBPM}\n";
+            
 
         foreach(SusMetaRequest request in metadatas.REQUESTs)
             metaDataText.text += $"\nREQUEST {request.Key}: {request.Value}";
+    }
+
+
+
+    private void OnReceivedAnalyzingMessage(string msg, bool overrideLine)
+    {
+        SyncContext.Post(_ =>
+        {
+            analysisScreen.AddAnalyzingMessage(msg, overrideLine);
+        }, null);
     }
 }
