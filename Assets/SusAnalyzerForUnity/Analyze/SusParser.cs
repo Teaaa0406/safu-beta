@@ -149,7 +149,6 @@ namespace Tea.Safu.Parse
                 if (GetMMM(lineInfo.Header) == "ATR") continue;
                 if (GetMMM(lineInfo.Header) == "TIL") continue;
                 if (lineInfo.Header.Substring(3, 2) == "02") continue;
-                if (lineInfo.Header == "MEASUREBS") continue;
 
                 // mmm08 (BPM•Ï‰»)
                 else if (lineInfo.Header.Substring(3, 2) == "08")
@@ -316,6 +315,12 @@ namespace Tea.Safu.Parse
             currentMeasureBase = 0;
             foreach (SusLineInfo lineInfo in lineInfos)
             {
+                if (lineInfo.LineType != SusLineType.Chart) continue;
+                if (GetMMM(lineInfo.Header) == "BPM") continue;
+                if (GetMMM(lineInfo.Header) == "ATR") continue;
+                if (GetMMM(lineInfo.Header) == "TIL") continue;
+                if (lineInfo.Header.Substring(3, 2) == "02") continue;
+
                 if (lineInfo.Header.Substring(3, 1) == "1" || lineInfo.Header.Substring(3, 1) == "2" || lineInfo.Header.Substring(3, 1) == "3" || lineInfo.Header.Substring(3, 1) == "4" || lineInfo.Header.Substring(3, 1) == "5")
                 {
                     int measure = int.Parse(GetMMM(lineInfo.Header)) + currentMeasureBase;
