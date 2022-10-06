@@ -58,6 +58,7 @@ public class DemoPlayer : MonoBehaviour
     // デモ関係
     [SerializeField] private AnalysisScreen analysisScreen;
     private SynchronizationContext SyncContext;
+    private bool playing = false;
 
     private long timing;
     private float time;
@@ -96,6 +97,7 @@ public class DemoPlayer : MonoBehaviour
 
     public void Playback()
     {
+        if (playing) return;
         PlaybackChart().Forget();
     }
 
@@ -105,6 +107,8 @@ public class DemoPlayer : MonoBehaviour
     /// <returns></returns>
     private async UniTask PlaybackChart()
     {
+        playing = true;
+
         INoteMover settingMover(INoteMover mover, bool playGuideSe, SusNotePlaybackDataBase note)
         {
             mover.Initialize(playGuideSe, () => PlayGuideSe());
@@ -118,6 +122,7 @@ public class DemoPlayer : MonoBehaviour
         /*
          * 譜面の生成＆移動を行います。
          */
+        bool chartEnded = false;
         bool gotNextNotes = false;
         bool instantiated = false;
         int readIndex = 0;
@@ -126,8 +131,9 @@ public class DemoPlayer : MonoBehaviour
         List<INoteMover> noteMovers = new List<INoteMover>();
 
         MoveTiming(analyzeSetting.StartTiming);
+        bgmPlayed = false;
 
-        while (true)
+        while (!chartEnded)
         {
 
             playedGuideSe = false;
@@ -176,7 +182,12 @@ public class DemoPlayer : MonoBehaviour
                                 break;
 
                             // ExTap
+                            // 仕様書には記載されていませんでしたが、4 5 6 はおそらくエフェクトの異なるEXタップノートです。
+                            // ここでは通常のEXタップノートとして生成します。
                             case 2:
+                            case 4:
+                            case 5:
+                            case 6:
                                 {
                                     GameObject instantiatedNote = Instantiate(exTapNoteObject, NotesParent, true);
                                     instantiatedNote.transform.localPosition = new Vector3(mmm1x.X, 0, analyzeSetting.InstantiatePosition);
@@ -201,23 +212,6 @@ public class DemoPlayer : MonoBehaviour
                                     mover = controller;
 
                                     spriteRenderer.sortingOrder = flickNoteSortingOrder;
-                                }
-                                break;
-
-                            // 仕様書には記載されていませんでしたが、4 5 6 はおそらくエフェクトの異なるEXタップノートです。
-                            // ここでは通常のEXタップノートとして生成します。
-                            case 4:
-                            case 5:
-                            case 6:
-                                {
-                                    GameObject instantiatedNote = Instantiate(exTapNoteObject, NotesParent, true);
-                                    instantiatedNote.transform.localPosition = new Vector3(mmm1x.X, 0, analyzeSetting.InstantiatePosition);
-                                    SpriteRenderer spriteRenderer = instantiatedNote.GetComponent<SpriteRenderer>();
-                                    spriteRenderer.size = new Vector2(mmm1x.Size, noteHeight);
-                                    ExTapNoteController controller = instantiatedNote.GetComponent<ExTapNoteController>();
-                                    mover = controller;
-
-                                    spriteRenderer.sortingOrder = exTapNoteSortingOrder;
                                 }
                                 break;
                         }
@@ -385,8 +379,19 @@ public class DemoPlayer : MonoBehaviour
                 bgmPlayed = true;
             }
 
+            if(analyzeResult.EndTiming < timing)
+            {
+                chartEnded = true;
+            }
+
             await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
         }
+
+        await UniTask.Delay(1000);
+
+        StopTiming();
+        bgmPlayed = false;
+        playing = false;
     }
 
     private void MoveTiming(long startTiming)
