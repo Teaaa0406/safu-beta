@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using UnityEngine;
 
-namespace Tea.Safu.Util
+namespace Tea.Safu.Analyze
 {
-    public static class Base36Util
+    public static class Base36Decoder
     {
         private const string Digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -28,21 +25,6 @@ namespace Tea.Safu.Util
             for (var i = 0; i < value.Length; ++i)
                 decoded += Digits.IndexOf(value[i]) * (int)BigInteger.Pow(Digits.Length, value.Length - i - 1);
             return negative ? decoded * -1 : decoded;
-        }
-
-        public static string Encode(long value)
-        {
-            if (value == int.MinValue)
-            {
-                return "-1Y2P0IJ32E8E8";
-            }
-            bool negative = value < 0;
-            value = Math.Abs(value);
-            string encoded = string.Empty;
-            do
-                encoded = Digits[(int)(value % Digits.Length)] + encoded;
-            while ((value /= Digits.Length) != 0);
-            return negative ? "-" + encoded : encoded;
         }
     }
 }

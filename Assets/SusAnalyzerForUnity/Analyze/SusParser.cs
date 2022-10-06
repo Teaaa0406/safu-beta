@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Tea.Safu.Analyze;
-using Tea.Safu.Util;
 using Tea.Safu.Models;
 using Tea.Safu.SusDebug;
 
@@ -195,9 +194,9 @@ namespace Tea.Safu.Parse
                         mmm1x.DataIndex = i;
                         mmm1x.Data = dataPartArray[i];
                         mmm1x.HispeedZz = currentHispeedZz;
-                        mmm1x.X = Base36Util.Decode(GetX(lineInfo.Header));
-                        mmm1x.Type = Base36Util.Decode(dataPartArray[i][0]);
-                        mmm1x.Size = Base36Util.Decode(dataPartArray[i][1]);
+                        mmm1x.X = Base36Decoder.Decode(GetX(lineInfo.Header));
+                        mmm1x.Type = Base36Decoder.Decode(dataPartArray[i][0]);
+                        mmm1x.Size = Base36Decoder.Decode(dataPartArray[i][1]);
                         noteDatas.Add(mmm1x);
                     }
                 }
@@ -217,10 +216,10 @@ namespace Tea.Safu.Parse
                         mmm2xy.DataIndex = i;
                         mmm2xy.Data = dataPartArray[i];
                         mmm2xy.HispeedZz = currentHispeedZz;
-                        mmm2xy.X = Base36Util.Decode(GetX(lineInfo.Header));
+                        mmm2xy.X = Base36Decoder.Decode(GetX(lineInfo.Header));
                         mmm2xy.Y = GetY(lineInfo.Header);
-                        mmm2xy.Type = Base36Util.Decode(dataPartArray[i][0]);
-                        mmm2xy.Size = Base36Util.Decode(dataPartArray[i][1]);
+                        mmm2xy.Type = Base36Decoder.Decode(dataPartArray[i][0]);
+                        mmm2xy.Size = Base36Decoder.Decode(dataPartArray[i][1]);
                         noteDatas.Add(mmm2xy);
                     }
                 }
@@ -240,10 +239,10 @@ namespace Tea.Safu.Parse
                         mmm3xy.DataIndex = i;
                         mmm3xy.Data = dataPartArray[i];
                         mmm3xy.HispeedZz = currentHispeedZz;
-                        mmm3xy.X = Base36Util.Decode(GetX(lineInfo.Header));
+                        mmm3xy.X = Base36Decoder.Decode(GetX(lineInfo.Header));
                         mmm3xy.Y = GetY(lineInfo.Header);
-                        mmm3xy.Type = Base36Util.Decode(dataPartArray[i][0]);
-                        mmm3xy.Size = Base36Util.Decode(dataPartArray[i][1]);
+                        mmm3xy.Type = Base36Decoder.Decode(dataPartArray[i][0]);
+                        mmm3xy.Size = Base36Decoder.Decode(dataPartArray[i][1]);
                         noteDatas.Add(mmm3xy);
                     }
                 }
@@ -263,10 +262,10 @@ namespace Tea.Safu.Parse
                         mmm4xy.DataIndex = i;
                         mmm4xy.Data = dataPartArray[i];
                         mmm4xy.HispeedZz = currentHispeedZz;
-                        mmm4xy.X = Base36Util.Decode(GetX(lineInfo.Header));
+                        mmm4xy.X = Base36Decoder.Decode(GetX(lineInfo.Header));
                         mmm4xy.Y = GetY(lineInfo.Header);
-                        mmm4xy.Type = Base36Util.Decode(dataPartArray[i][0]);
-                        mmm4xy.Size = Base36Util.Decode(dataPartArray[i][1]);
+                        mmm4xy.Type = Base36Decoder.Decode(dataPartArray[i][0]);
+                        mmm4xy.Size = Base36Decoder.Decode(dataPartArray[i][1]);
                         noteDatas.Add(mmm4xy);
                     }
                 }
@@ -286,9 +285,9 @@ namespace Tea.Safu.Parse
                         mmm5x.DataIndex = i;
                         mmm5x.Data = dataPartArray[i];
                         mmm5x.HispeedZz = currentHispeedZz;
-                        mmm5x.X = Base36Util.Decode(GetX(lineInfo.Header));
-                        mmm5x.Type = Base36Util.Decode(dataPartArray[i][0]);
-                        mmm5x.Size = Base36Util.Decode(dataPartArray[i][1]);
+                        mmm5x.X = Base36Decoder.Decode(GetX(lineInfo.Header));
+                        mmm5x.Type = Base36Decoder.Decode(dataPartArray[i][0]);
+                        mmm5x.Size = Base36Decoder.Decode(dataPartArray[i][1]);
                         noteDatas.Add(mmm5x);
                     }
                 }
