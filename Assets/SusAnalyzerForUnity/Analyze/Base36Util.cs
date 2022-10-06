@@ -34,7 +34,6 @@ namespace Tea.Safu.Util
         {
             if (value == int.MinValue)
             {
-                //hard coded value due to error when getting absolute value below: "Negating the minimum value of a twos complement number is invalid.".
                 return "-1Y2P0IJ32E8E8";
             }
             bool negative = value < 0;
