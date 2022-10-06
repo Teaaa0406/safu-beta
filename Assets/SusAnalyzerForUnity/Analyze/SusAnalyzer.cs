@@ -63,6 +63,7 @@ namespace Tea.Safu.Analyze
         {
             public SusMetadatas MetaDatas { get; set; }
             public SusNotePlaybackDatas NotePlaybackDatas { get; set; }
+            public long EndTiming;
         }
 
 
@@ -103,6 +104,8 @@ namespace Tea.Safu.Analyze
             SusNotePlaybackDatas notePlaybackDatas = new SusNotePlaybackDatas();
             notePlaybackDatas.Notes = new List<SusNotePlaybackDataBase>();
 
+            analyzeResult.EndTiming = long.MinValue;
+
             // SUS解析設定の確認
             if (setting.InstantiateCycle < 1)
             {
@@ -131,7 +134,11 @@ namespace Tea.Safu.Analyze
             // 有効タイミングを計算&ソート
             sendAnalyzingMessage("ノーツ有効タイミング計算中...", false, true);
             foreach (SusNoteDataBase noteData in chartDatas.NoteDatas)
-                noteData.EnabledTiming = calculationUtils.CalEnabledTiming(noteData);
+            {
+                long enabledTiming = calculationUtils.CalEnabledTiming(noteData);
+                noteData.EnabledTiming = enabledTiming;
+                if (enabledTiming > analyzeResult.EndTiming) analyzeResult.EndTiming = enabledTiming;
+            }
             chartDatas.NoteDatas.Sort((x, y) => x.EnabledTiming.CompareTo(y.EnabledTiming));
 
             sendAnalyzingMessage("ハイスピード定義をセットアップ中...", false, true);
