@@ -30,7 +30,7 @@ public class HoldNoteController : NoteMoverBase, INoteMover
 
         }
 
-        if (timing >= NotePlaybackData.EnabledTiming && !playedSe && playGuideSe)
+        if (timing >= NotePlaybackData.EnabledTiming && !playedSe)
         {
             guideSeAction();
             playedSe = true;

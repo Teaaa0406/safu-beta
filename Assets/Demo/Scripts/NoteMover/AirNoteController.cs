@@ -45,7 +45,7 @@ public class AirNoteController: NoteMoverBase, INoteMover
             if (setting == null) setting = mmm5xPlaybackData.Setting;
             SetTextureOffset();
         }
-        if (timing >= NotePlaybackData.EnabledTiming && !playedSe && playGuideSe)
+        if (timing >= NotePlaybackData.EnabledTiming && !playedSe)
         {
             guideSeAction();
             playedSe = true;

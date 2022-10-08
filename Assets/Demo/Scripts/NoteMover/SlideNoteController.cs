@@ -31,7 +31,7 @@ public class SlideNoteController : NoteMoverBase, INoteMover
             GenerateSlide(timing);
         }
 
-        if (timing >= NotePlaybackData.EnabledTiming && !playedSe && playGuideSe)
+        if (timing >= NotePlaybackData.EnabledTiming && !playedSe)
         {
             guideSeAction();
             playedSe = true;

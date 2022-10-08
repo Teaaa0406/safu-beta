@@ -32,7 +32,7 @@ public class AirHoldNoteController: NoteMoverBase, INoteMover
             GenerateAirHoldLine(timing);
         }
 
-        if (timing >= NotePlaybackData.EnabledTiming && !playedSe && playGuideSe)
+        if (timing >= NotePlaybackData.EnabledTiming && !playedSe)
         {
             guideSeAction();
             playedSe = true;

@@ -8,7 +8,7 @@ public interface INoteMover
 {
     public SusNotePlaybackDataBase NotePlaybackData { get; set; }
 
-    public void Initialize(bool playGuideSe, Action guideSeAction = null);
+    public void Initialize(Action guideSeAction = null);
 
     public void MoveClock(long timing);
 }
@@ -16,7 +16,6 @@ public interface INoteMover
 public class NoteMoverBase : MonoBehaviour
 {
     private SusNotePlaybackDataBase notePlaybackData;
-    protected bool playGuideSe;
     protected Action guideSeAction;
     protected bool playedSe = false;
     protected bool destroyed = false;
@@ -26,9 +25,8 @@ public class NoteMoverBase : MonoBehaviour
 
 
 
-    public void Initialize(bool playGuideSe, Action guideSeAction = null)
+    public void Initialize(Action guideSeAction = null)
     {
-        this.playGuideSe = playGuideSe;
         this.guideSeAction = guideSeAction;
     }
 
@@ -39,9 +37,9 @@ public class NoteMoverBase : MonoBehaviour
         {
             transform.position = new Vector3(transform.position.x, transform.position.y, notePlaybackData.CalNotePositionByTiming(timing));
         }
-        if (timing >= notePlaybackData.EnabledTiming && !playedSe && playGuideSe)
+        if (timing >= notePlaybackData.EnabledTiming && !playedSe)
         {
-            guideSeAction();
+            if(guideSeAction != null) guideSeAction();
             playedSe = true;
         }
         //if(timing > notePlaybackData.EnabledTiming + 250) Destroy();
